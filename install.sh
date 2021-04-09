@@ -1240,7 +1240,7 @@ delete_tls_key_and_crt() {
 }
 
 clear_timeout() {
-    echo -e "${Warning} ${YellowBG} 3秒后将清空屏幕! ${Font}"
+    echo -e "${Warning} ${GreenBG} 3秒后将清空屏幕! ${Font}"
     timeout=0
     timeout_str=""
     while [ $timeout -le 60 ]; do

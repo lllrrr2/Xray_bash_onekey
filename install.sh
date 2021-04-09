@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.5.10"
+shell_version="1.5.5.11"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1417,6 +1417,18 @@ list() {
         basic_information
         vless_qr_link_image
         show_information
+        ;;
+    xray_update)
+        xray_update
+        clear_timeout
+        ;;
+    xray_access)
+        clear
+        show_access_log
+        ;;
+    xray_error)
+        clear
+        show_error_log
         ;;
     tls_modify)
         tls_type

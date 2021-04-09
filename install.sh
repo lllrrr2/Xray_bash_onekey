@@ -1413,6 +1413,9 @@ maintain() {
 
 list() {
     case $1 in
+    update)
+        update_sh
+        ;;
     show)
         basic_information
         vless_qr_link_image

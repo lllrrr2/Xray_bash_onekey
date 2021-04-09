@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.5.9"
+shell_version="1.5.5.10"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1242,27 +1242,33 @@ delete_tls_key_and_crt() {
 clear_timeout() {
     echo -e "${Warning} ${YellowBG} 3秒后将清空屏幕! ${Font}"
     timeout=0
-    timeout_str="#"
+    timeout_str=""
     while [ $timeout -le 60 ]; do
-        if [ $timeout -le 20 ]; then
-            let timeout_color=32
-            let timeout_bg=42
-            timeout_index="3"
-        elif [ $timeout -le 40 ]; then
-            let timeout_color=33
-            let timeout_bg=43
-            timeout_index="2"
-        elif [ $timeout -le 58 ]; then
-            let timeout_color=31
-            let timeout_bg=41
-            timeout_index="1"
-        else
-            timeout_index="0"
-        fi
-        printf "\033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m\r" "$timeout_str" "$timeout_index"
-        sleep 0.05
-        let timeout=timeout+1
+        let timeout++
         timeout_str+="#"
+    done
+    let timeout=timeout+10
+    while [ $timeout -gt 0 ]; do
+            let timeout--
+            if [ $timeout -gt 50 ]; then
+                let timeout_color=32
+                let timeout_bg=42
+                timeout_index="3"
+            elif [ $timeout -gt 30 ]; then
+                let timeout_color=33
+                let timeout_bg=43
+                timeout_index="2"
+            elif [ $timeout -gt 10 ]; then
+                let timeout_color=31
+                let timeout_bg=41
+                timeout_index="1"
+            else
+                timeout_index="0"
+            fi
+        timeout_black=" "
+        printf "\033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_str" "$timeout_index" "$timeout_black"
+        sleep 0.05
+        timeout_str=${timeout_str%?}
     done
     clear
 }
@@ -1476,7 +1482,7 @@ menu() {
     echo -e "${Green}14.${Font} 证书 有效期更新"
     echo -e "${Green}15.${Font} 卸载 Xray"
     echo -e "${Green}16.${Font} 更新 证书 crontab 计划任务"
-    echo -e "${Green}17.${Font} 清空 证书遗留文件"
+    echo -e "${Green}17.${Font} 清空 证书文件"
     echo -e "${Green}18.${Font} 退出 \n"
 
     read -rp "请输入数字: " menu_num
@@ -1587,6 +1593,7 @@ menu() {
         ;;
     17)
         delete_tls_key_and_crt
+        rm -rf ${ssl_chainpath}/*
         clear_timeout
         bash idleleo
         ;;

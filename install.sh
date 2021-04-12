@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.5.11"
+shell_version="1.5.5.12"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1243,22 +1243,22 @@ clear_timeout() {
     echo -e "${Warning} ${GreenBG} 3秒后将清空屏幕! ${Font}"
     timeout=0
     timeout_str=""
-    while [ $timeout -le 60 ]; do
+    while [ $timeout -le 30 ]; do
         let timeout++
         timeout_str+="#"
     done
-    let timeout=timeout+10
+    let timeout=timeout+5
     while [ $timeout -gt 0 ]; do
             let timeout--
-            if [ $timeout -gt 50 ]; then
+            if [ $timeout -gt 25 ]; then
                 let timeout_color=32
                 let timeout_bg=42
                 timeout_index="3"
-            elif [ $timeout -gt 30 ]; then
+            elif [ $timeout -gt 15 ]; then
                 let timeout_color=33
                 let timeout_bg=43
                 timeout_index="2"
-            elif [ $timeout -gt 10 ]; then
+            elif [ $timeout -gt 5 ]; then
                 let timeout_color=31
                 let timeout_bg=41
                 timeout_index="1"
@@ -1267,7 +1267,7 @@ clear_timeout() {
             fi
         timeout_black=" "
         printf "\033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_str" "$timeout_index" "$timeout_black"
-        sleep 0.05
+        sleep 0.1
         timeout_str=${timeout_str%?}
     done
     clear
@@ -1417,6 +1417,7 @@ list() {
         update_sh
         ;;
     show)
+        clear
         basic_information
         vless_qr_link_image
         show_information
@@ -1486,7 +1487,7 @@ menu() {
     echo -e "${Green}5.${Font}  变更 UUIDv5/映射字符串"
     echo -e "${Green}6.${Font}  变更 port"
     echo -e "${Green}7.${Font}  变更 TLS 版本 (仅Nginx+ws+tls有效)"
-    echo -e "${Green}8.${Font}  追加 Nginx 负载均衡"
+    echo -e "${Green}8.${Font}  追加 Nginx 负载均衡配置"
     echo -e "—————————————— 查看信息 ——————————————"
     echo -e "${Green}9.${Font}  查看 实时访问日志"
     echo -e "${Green}10.${Font} 查看 实时错误日志"

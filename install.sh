@@ -1168,21 +1168,21 @@ tls_type() {
             if [[ $shell_mode == "ws"  ]]; then
                 sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.3;/' $nginx_conf
             else
-                sed -i "/\"minVersion\"/c \\\t\\t\\t\\t\\t\"minVersion\": \"1.3\"," ${xray_conf}   
+                sed -i "/\"minVersion\"/c \                \"minVersion\": \"1.3\"," ${xray_conf}   
             fi
             echo -e "${OK} ${GreenBG} 已切换至 TLS1.3 only ${Font}"
         elif [[ $tls_version == 1 ]]; then
             if [[ $shell_mode == "ws"  ]]; then
                 sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;/' $nginx_conf
             else
-                sed -i "/\"minVersion\"/c \\\t\\t\\t\\t\\t\"minVersion\": \"1.1\"," ${xray_conf}  
+                sed -i "/\"minVersion\"/c \                \"minVersion\": \"1.1\"," ${xray_conf}  
             fi
             echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
         else
             if [[ $shell_mode == "ws"  ]]; then
                 sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.2 TLSv1.3;/' $nginx_conf
             else
-                sed -i "/\"minVersion\"/c \\\t\\t\\t\\t\\t\"minVersion\": \"1.2\"," ${xray_conf}  
+                sed -i "/\"minVersion\"/c \                \"minVersion\": \"1.2\"," ${xray_conf}  
             fi
             echo -e "${OK} ${GreenBG} 已切换至 TLS1.2 and TLS1.3 ${Font}"
         fi

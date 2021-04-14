@@ -1261,7 +1261,6 @@ delete_tls_key_and_crt() {
 }
 
 clear_timeout() {
-    echo -e "${Warning} ${GreenBG} 3秒后将清空屏幕! ${Font}"
     timeout=0
     timeout_str=""
     while [[ ${timeout} -le 30 ]]; do
@@ -1287,7 +1286,7 @@ clear_timeout() {
                 timeout_index="0"
             fi
         timeout_black=" "
-        printf "\033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_str" "$timeout_index" "$timeout_black"
+        printf "${Warning} ${GreenBG} %d秒后将清空屏幕! ${Font} \033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_index" "$timeout_str" "$timeout_index" "$timeout_black"
         sleep 0.1
         timeout_str=${timeout_str%?}
     done

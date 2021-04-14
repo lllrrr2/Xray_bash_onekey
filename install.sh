@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.2"
+shell_version="1.5.7.3"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -209,7 +209,7 @@ create_directory() {
         [[ ! -d "${nginx_conf_dir}" ]] && mkdir -p ${nginx_conf_dir}
     fi
     [[ ! -d "${xray_conf_dir}" ]] && mkdir -p ${xray_conf_dir}
-    [[ ! -d "${idleleo_xray_dir}/info" ]] && mkdir -p ${idleleo_xray_dir}/info
+    [[ ! -d "${idleleo_dir}/info" ]] && mkdir -p ${idleleo_dir}/info
     [[ ! -d "${idleleo_tmp}" ]] && mkdir -p ${idleleo_tmp}
 }
 

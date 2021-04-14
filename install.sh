@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.4"
+shell_version="1.5.7.5"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1113,7 +1113,7 @@ ssl_judge_and_install() {
             judge "证书应用"
             ;;
         esac
-    if [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]] &&  [[ ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
+    elif [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]] &&  [[ ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
         echo -e "${GreenBG} 证书文件已存在 ${Font}"
         echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
         read -r ssl_delete_2

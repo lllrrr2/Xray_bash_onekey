@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.3"
+shell_version="1.5.7.4"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1097,41 +1097,53 @@ show_information() {
 }
 
 ssl_judge_and_install() {
-    if [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]]; then
-        echo "${GreenBG} 证书文件已存在 ${Font}"
+    if [[ -f "${ssl_chainpath}/xray.key" && -f "${ssl_chainpath}/xray.crt" ]] &&  [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
+        echo -e "${GreenBG} 所有证书文件均已存在 ${Font}"
         echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
-        read -r ssl_delete
-        case $ssl_delete in
+        read -r ssl_delete_1
+        case $ssl_delete_1 in
         [yY][eE][sS] | [yY])
             delete_tls_key_and_crt
             rm -rf ${ssl_chainpath}/*
             echo -e "${OK} ${GreenBG} 已删除 ${Font}"
+            ssl_install
+            acme
             ;;
-        *) ;;
-
+        *) 
+            judge "证书应用"
+            ;;
         esac
-    fi
-
-    if [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-        echo -e "${GreenBG} 部分证书文件已存在 ${Font}"
+    if [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]] &&  [[ ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
+        echo -e "${GreenBG} 证书文件已存在 ${Font}"
         echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
         read -r ssl_delete_2
         case $ssl_delete_2 in
+        [yY][eE][sS] | [yY])
+            rm -rf ${ssl_chainpath}/*
+            echo -e "${OK} ${GreenBG} 已删除 ${Font}"
+            ssl_install
+            acme
+            ;;
+        *) 
+            judge "证书应用"
+            ;;
+        esac
+    elif [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]] && [[ ! -f "${ssl_chainpath}/xray.key" || ! -f "${ssl_chainpath}/xray.crt"  ]]; then
+        echo -e "${GreenBG} 证书签发残留文件已存在 ${Font}"
+        echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
+        read -r ssl_delete_3
+        case $ssl_delete_3 in
         [yY][eE][sS] | [yY])
             delete_tls_key_and_crt
             echo -e "${OK} ${GreenBG} 已删除 ${Font}"
             ssl_install
             acme
             ;;
-        *) ;;
-
+        *) 
+            "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc
+            judge "证书应用"
+            ;;
         esac
-    elif [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]]; then
-        echo -e "${GreenBG} 证书文件已存在 ${Font}"
-        judge "证书应用"
-    elif [[ ! -f "${ssl_chainpath}/xray.key" || ! -f "${ssl_chainpath}/xray.crt"  ]] && [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-        "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc
-        judge "证书应用"
     else
         ssl_install
         acme
@@ -1252,7 +1264,6 @@ uninstall_all() {
             echo -e "${OK} ${Green} 已卸载 Nginx ${Font}"
             ;;
         *) ;;
-
         esac
     fi
     systemctl daemon-reload
@@ -1424,7 +1435,6 @@ update_sh() {
             bash idleleo
             ;;
         *) ;;
-
         esac
     else
         clear

@@ -1411,7 +1411,7 @@ update_sh() {
         read -r update_confirm
         case $update_confirm in
         [yY][eE][sS] | [yY])
-            [[ -f]]rm -f ${idleleo_commend_file}
+            [[ -L ${idleleo_commend_file} ]] && rm -f ${idleleo_commend_file}
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}
             clear

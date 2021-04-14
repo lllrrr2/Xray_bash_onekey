@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.5"
+shell_version="1.5.7.6"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1493,17 +1493,30 @@ list() {
 }
 
 idleleo_commend() {
-    if [[ -L "${idleleo_commend_file}" ]]; then
-        echo -e "${Green}可以使用${Red} idleleo ${Font}命令管理脚本\n${Font}"
-    else
-        if [[ -L "/usr/bin/idleleo-xray" ]]; then
-            rm -rf /usr/bin/idleleo-xray
+    if [[ -L ${idleleo_commend_file} ]] || [[ -f ${idleleo_dir}/install.sh ]]; then
+        old_version=$(grep "shell_version=" ${idleleo_dir}/install.sh | head -1 | awk -F '=|"' '{print $3}')
+        echo "${old_version}" >${version_cmp_local}
+        echo "${shell_version}" >>${version_cmp_local}
+        if [[ -z ${old_version} ]]; then
+            wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+            clear
+            bash idleleo
+        elif [[ ${shell_version} != "$(sort -rV ${version_cmp_local} | head -1)" ]]; then
+            rm -rf ${idleleo_dir}/install.sh
+            wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+            clear
+            bash idleleo
+        elif [[ ! -L ${idleleo_commend_file} ]]; then
+            ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}
+            echo -e "${Green}可以使用${Red} idleleo ${Font}命令管理脚本\n${Font}"
+        else
+            echo -e "${Green}可以使用${Red} idleleo ${Font}命令管理脚本\n${Font}"
         fi
-        ln -s $(
-            cd "$(dirname "$0")"
-            pwd
-        )/install.sh ${idleleo_commend_file}
-        echo -e "${Green}可以使用${Red} idleleo ${Font}命令管理脚本\n${Font}"
+    else
+        wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+        ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}
+        clear
+        bash idleleo
     fi
 }
 

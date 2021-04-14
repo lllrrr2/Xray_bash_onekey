@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.0"
+shell_version="1.5.7.1"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -452,6 +452,7 @@ xray_install() {
         judge "安装 Xray"
         sleep 1
         xray_privilege_escalation
+        [[ -f ${xray_default_conf} ]] && rm -rf ${xray_default_conf}
         ln -s ${xray_conf} ${xray_default_conf}
     else
         echo -e "${Error} ${RedBG} Xray 安装文件下载失败, 请检查下载地址是否可用 ${Font}"
@@ -477,6 +478,8 @@ xray_update() {
         bash <(curl -L -s https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh)
         sleep 1
         xray_privilege_escalation
+        [[ -f ${xray_default_conf} ]] && rm -rf ${xray_default_conf}
+        ln -s ${xray_conf} ${xray_default_conf}
     else
         echo -e "${GreenBG} 若更新无效, 建议直接卸载再安装！ ${Font}"
         systemctl stop xray
@@ -491,6 +494,8 @@ xray_update() {
         bash <(curl -L -s https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh)
         sleep 1
         xray_privilege_escalation
+        [[ -f ${xray_default_conf} ]] && rm -rf ${xray_default_conf}
+        ln -s ${xray_conf} ${xray_default_conf}
     fi
     # 清除临时文件
     ##rm -rf ${idleleo_tmp}/xray

@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.7"
+shell_version="1.5.7.8"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1495,13 +1495,13 @@ list() {
 idleleo_commend() {
     if [[ -L ${idleleo_commend_file} ]] || [[ -f ${idleleo_dir}/install.sh ]]; then
         old_version=$(grep "shell_version=" ${idleleo_dir}/install.sh | head -1 | awk -F '=|"' '{print $3}')
-        echo "${shell_version}" >${version_cmp}
-        echo "${old_version}" >>${version_cmp}
+        echo "${old_version}" >${version_cmp}
+        echo "${shell_version}" >>${version_cmp}
         if [[ -z ${old_version} ]]; then
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear
             bash idleleo
-        elif [[ ${shell_version} != "$(sort -rV ${version_cmp} | head -1)" ]]; then
+        elif [[ ${shell_version} != "$(sort -V ${version_cmp} | head -1)" ]]; then
             rm -rf ${idleleo_dir}/install.sh
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear

@@ -1501,7 +1501,7 @@ idleleo_commend() {
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear
             bash idleleo
-        elif [[ ${shell_version} != "$(sort -rV ${version_cmp_local} | head -1)" ]]; then
+        elif [[ ${shell_version} != "$(sort -rV ${version_cmp} | head -1)" ]]; then
             rm -rf ${idleleo_dir}/install.sh
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear

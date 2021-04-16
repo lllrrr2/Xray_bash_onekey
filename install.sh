@@ -378,6 +378,7 @@ modify_nginx_port() {
 }
 
 modify_nginx_other() {
+    sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
     sed -i "/server_name/c \\\t\\tserver_name ${domain};" ${nginx_conf}
     if [[ ${shell_mode} != "xtls" ]]; then
         sed -i "/location/c \\\tlocation ${camouflage}" ${nginx_conf}
@@ -386,9 +387,7 @@ modify_nginx_other() {
     sed -i "/return/c \\\t\\treturn 301 https://${domain}\$request_uri;" ${nginx_conf}
     sed -i "/returc/c \\\t\\t\\treturn 302 https://www.idleleo.com/helloworld;" ${nginx_conf}
     sed -i "/locatioc/c \\\t\\tlocation \/" ${nginx_conf}
-    #sed -i "/#gzip  on;/c \\\t#gzip  on;\\n\\tserver_tokens off;" ${nginx_dir}/conf/nginx.conf
-    #sed -i "/\\tserver_tokens off;\\n\\tserver_tokens off;/c \\\tserver_tokens off;" ${nginx_dir}/conf/nginx.conf
-    sed -i "s/        server_name  localhost;/\t\tserver_name  localhost;\n\n\t\tif (\$host = '${local_ip}'){\n\t\t\treturn 302 https:\/\/www.idleleo.com\/helloworld;\n\t\t}\n/" ${nginx_dir}/conf/nginx.conf
+    sed -i "/server_name  localhost;/a \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
     #sed -i "27i \\\tproxy_intercept_errors on;"  ${nginx_dir}/conf/nginx.conf
 }
 
@@ -505,6 +504,12 @@ nginx_exist_check() {
     if [[ -f "/etc/nginx/sbin/nginx" ]]; then
         if [[ -d ${nginx_conf_dir} ]]; then
             rm -rf ${nginx_conf_dir}/*
+            if [[ -f  ${nginx_conf_dir}/original.conf ]]; then 
+                cp -fp ${nginx_conf_dir}/original.conf ${nginx_dir}/conf/nginx.conf
+            else
+                sed -i "/if \(.*\) {$/,+2d" ${nginx_dir}/conf/nginx.conf
+                sed -i "/^include.*\*\.conf;$/d" ${nginx_dir}/conf/nginx.conf
+            fi
         else
             mkdir -p ${nginx_conf_dir}
         fi
@@ -579,7 +584,7 @@ nginx_install() {
     sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/conf/nginx.conf
     sed -i 's/worker_processes  1;/worker_processes  4;/' ${nginx_dir}/conf/nginx.conf
     sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_dir}/conf/nginx.conf
-    sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
+    cp -fp ${nginx_dir}/conf/nginx.conf ${nginx_conf_dir}/original.conf
 
     # 删除临时文件
     rm -rf ../nginx-${nginx_version}

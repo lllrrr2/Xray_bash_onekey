@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.8.2"
+shell_version="1.5.8.3"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1105,10 +1105,10 @@ show_information() {
 ssl_judge_and_install() {
     if [[ -f "${ssl_chainpath}/xray.key" && -f "${ssl_chainpath}/xray.crt" ]] &&  [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
         echo -e "${GreenBG} 所有证书文件均已存在 ${Font}"
-        echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
+        echo -e "${GreenBG} 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_1
         case $ssl_delete_1 in
-        [yY][eE][sS] | [yY])
+        [nN][oO]|[nN])
             delete_tls_key_and_crt
             rm -rf ${ssl_chainpath}/*
             echo -e "${OK} ${GreenBG} 已删除 ${Font}"
@@ -1121,10 +1121,10 @@ ssl_judge_and_install() {
         esac
     elif [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]] &&  [[ ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
         echo -e "${GreenBG} 证书文件已存在 ${Font}"
-        echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
+        echo -e "${GreenBG} 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_2
         case $ssl_delete_2 in
-        [yY][eE][sS] | [yY])
+        [nN][oO]|[nN])
             rm -rf ${ssl_chainpath}/*
             echo -e "${OK} ${GreenBG} 已删除 ${Font}"
             ssl_install
@@ -1136,10 +1136,10 @@ ssl_judge_and_install() {
         esac
     elif [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]] && [[ ! -f "${ssl_chainpath}/xray.key" || ! -f "${ssl_chainpath}/xray.crt"  ]]; then
         echo -e "${GreenBG} 证书签发残留文件已存在 ${Font}"
-        echo -e "${GreenBG} 是否删除 [Y/N]? ${Font}"
+        echo -e "${GreenBG} 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_3
         case $ssl_delete_3 in
-        [yY][eE][sS] | [yY])
+        [nN][oO]|[nN])
             delete_tls_key_and_crt
             echo -e "${OK} ${GreenBG} 已删除 ${Font}"
             ssl_install

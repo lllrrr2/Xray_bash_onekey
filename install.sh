@@ -8,14 +8,14 @@ cd "$(
     pwd
 )" || exit
 
-#====================================================
-#	System Request:Debian 9+/Ubuntu 18.04+/Centos 7+
+#=====================================================
+#	System Request: Debian 9+/Ubuntu 18.04+/Centos 7+
 #	Author:	paniy
-#	Dscription: Xray onekey Management
+#	Dscription: Xray Onekey Management
 #	Version: 2.0
-#	email:admin@idleleo.com
+#	email: admin@idleleo.com
 #	Official document: www.idleleo.com
-#====================================================
+#=====================================================
 
 #fonts color
 Green="\033[32m"
@@ -32,8 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-# 版本
-shell_version="1.5.8.4"
+shell_version="1.5.9.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1551,14 +1550,19 @@ menu() {
     echo -e "${Green}9.${Font}  查看 实时访问日志"
     echo -e "${Green}10.${Font} 查看 实时错误日志"
     echo -e "${Green}11.${Font} 查看 Xray 配置信息"
+    echo -e "—————————————— 服务相关 ——————————————"
+    echo -e "${Green}12.${Font} 重启 所有服务"
+    echo -e "${Green}13.${Font} 启动 所有服务"
+    echo -e "${Green}14.${Font} 关闭 所有服务"
+    echo -e "${Green}15.${Font} 查看 所有服务"
     echo -e "—————————————— 其他选项 ——————————————"
-    echo -e "${Green}12.${Font} 安装 TCP 加速脚本"
-    echo -e "${Green}13.${Font} 安装 MTproxy (不推荐使用)"
-    echo -e "${Green}14.${Font} 证书 有效期更新"
-    echo -e "${Green}15.${Font} 卸载 Xray"
-    echo -e "${Green}16.${Font} 更新 证书 crontab 计划任务"
-    echo -e "${Green}17.${Font} 清空 证书文件"
-    echo -e "${Green}18.${Font} 退出 \n"
+    echo -e "${Green}16.${Font} 安装 TCP 加速脚本"
+    echo -e "${Green}17.${Font} 安装 MTproxy (不推荐使用)"
+    echo -e "${Green}18.${Font} 证书 有效期更新"
+    echo -e "${Green}19.${Font} 卸载 Xray"
+    echo -e "${Green}20.${Font} 更新 证书 crontab 计划任务"
+    echo -e "${Green}21.${Font} 清空 证书文件"
+    echo -e "${Green}22.${Font} 退出 \n"
 
     read -rp "请输入数字: " menu_num
     case $menu_num in
@@ -1647,14 +1651,57 @@ menu() {
         bash idleleo
         ;;
     12)
+        systemctl daemon-reload
+        sleep 1
+        if [[ ${shell_mode} != "wsonly" ]]; then
+            systemctl restart nginx
+            judge "Nginx 重启"
+            sleep 1
+        fi
+        systemctl restart xray
+        judge "Xray 重启"
+        timeout "清空屏幕!"
+        clear
+        ;;
+    13)
+        if [[ ${shell_mode} != "wsonly" ]]; then
+            systemctl start nginx
+            judge "Nginx 启动"
+            sleep 1
+        fi
+        systemctl start xray
+        judge "Xray 启动"
+        timeout "清空屏幕!"
+        clear
+        ;;
+    14)
+        if [[ ${shell_mode} != "wsonly" ]]; then
+            systemctl stop nginx
+            judge "Nginx 停止"
+            sleep 1
+        fi
+        systemctl stop xray
+        judge "Xray 停止"
+        timeout "清空屏幕!"
+        clear
+        ;;
+    15)
+        if [[ ${shell_mode} != "wsonly" ]]; then
+            systemctl status nginx
+        fi
+        systemctl status xray
+        timeout "清空屏幕!"
+        clear
+        ;;
+    16)
         clear
         bbr_boost_sh
         ;;
-    13)
+    17)
         clear
         mtproxy_sh
         ;;
-    14)
+    18)
         stop_process_systemd
         ssl_update_manuel
         start_process_systemd
@@ -1662,26 +1709,26 @@ menu() {
         clear
         bash idleleo
         ;;
-    15)
+    19)
         uninstall_all
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    16)
+    20)
         acme_cron_update
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    17)
+    21)
         delete_tls_key_and_crt
         rm -rf ${ssl_chainpath}/*
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    18)
+    22)
         timeout "清空屏幕!"
         clear
         exit 0

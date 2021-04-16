@@ -1553,7 +1553,7 @@ menu() {
     echo -e "—————————————— 服务相关 ——————————————"
     echo -e "${Green}12.${Font} 重启 所有服务"
     echo -e "${Green}13.${Font} 启动 所有服务"
-    echo -e "${Green}14.${Font} 关闭 所有服务"
+    echo -e "${Green}14.${Font} 停止 所有服务"
     echo -e "${Green}15.${Font} 查看 所有服务"
     echo -e "—————————————— 其他选项 ——————————————"
     echo -e "${Green}16.${Font} 安装 TCP 加速脚本"

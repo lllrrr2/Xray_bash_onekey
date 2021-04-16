@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.5.9.0"
+shell_version="1.5.9.1"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1662,6 +1662,7 @@ menu() {
         judge "Xray 重启"
         timeout "清空屏幕!"
         clear
+        bash idleleo
         ;;
     13)
         if [[ ${shell_mode} != "wsonly" ]]; then
@@ -1673,6 +1674,7 @@ menu() {
         judge "Xray 启动"
         timeout "清空屏幕!"
         clear
+        bash idleleo
         ;;
     14)
         if [[ ${shell_mode} != "wsonly" ]]; then
@@ -1684,14 +1686,14 @@ menu() {
         judge "Xray 停止"
         timeout "清空屏幕!"
         clear
+        bash idleleo
         ;;
     15)
         if [[ ${shell_mode} != "wsonly" ]]; then
             systemctl status nginx
         fi
         systemctl status xray
-        timeout "清空屏幕!"
-        clear
+        bash idleleo
         ;;
     16)
         clear

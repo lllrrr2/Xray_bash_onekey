@@ -33,7 +33,7 @@ Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
 # 版本
-shell_version="1.5.7.8"
+shell_version="1.5.8.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -669,8 +669,7 @@ port_exist_check() {
     else
         echo -e "${Error} ${RedBG} 检测到 $1 端口被占用, 以下为 $1 端口占用信息 ${Font}"
         lsof -i:"$1"
-        echo -e "${OK} ${GreenBG} 5s 后将尝试自动 kill 占用进程 ${Font}"
-        sleep 5
+        timeout "尝试自动 kill 占用进程"
         lsof -i:"$1" | awk '{print $2}' | grep -v "PID" | xargs kill -9
         echo -e "${OK} ${GreenBG} kill 完成 ${Font}"
         sleep 1
@@ -1281,7 +1280,7 @@ delete_tls_key_and_crt() {
     echo -e "${OK} ${GreenBG} 已清空证书遗留文件 ${Font}"
 }
 
-clear_timeout() {
+timeout() {
     timeout=0
     timeout_str=""
     while [[ ${timeout} -le 30 ]]; do
@@ -1307,11 +1306,10 @@ clear_timeout() {
                 timeout_index="0"
             fi
         timeout_black=" "
-        printf "${Warning} ${GreenBG} %d秒后将清空屏幕! ${Font} \033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_index" "$timeout_str" "$timeout_index" "$timeout_black"
+        printf "${Warning} ${GreenBG} %d秒后将$1 ${Font} \033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_index" "$timeout_str" "$timeout_index" "$timeout_black"
         sleep 0.1
         timeout_str=${timeout_str%?}
     done
-    clear
 }
 
 judge_mode() {
@@ -1481,7 +1479,8 @@ list() {
         ;;
     xray)
         xray_update
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         ;;
     xray_access)
         clear
@@ -1588,14 +1587,16 @@ menu() {
         ;;
     4)
         xray_update
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     5)
         UUID_set
         modify_UUID
         start_process_systemd
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     6)
@@ -1612,17 +1613,20 @@ menu() {
         fi
         firewall_set
         start_process_systemd
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     7)
         tls_type
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     8)
         nginx_upstream_server_set
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     9)
@@ -1652,27 +1656,32 @@ menu() {
         stop_process_systemd
         ssl_update_manuel
         start_process_systemd
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     15)
         uninstall_all
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     16)
         acme_cron_update
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     17)
         delete_tls_key_and_crt
         rm -rf ${ssl_chainpath}/*
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         bash idleleo
         ;;
     18)
-        clear_timeout
+        timeout "清空屏幕!"
+        clear
         exit 0
         ;;
     *)

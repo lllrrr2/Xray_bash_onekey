@@ -116,7 +116,7 @@ check_system() {
 is_root() {
     if [[ 0 == $UID ]]; then
         echo -e "${OK} ${GreenBG} 当前用户是 root用户, 进入安装流程 ${Font}"
-        sleep 3
+        sleep 2
     else
         echo -e "${Error} ${RedBG} 当前用户不是 root用户, 请切换到 root用户 后重新执行脚本 ${Font}"
         exit 1

@@ -73,7 +73,6 @@ THREAD=$(($(grep 'processor' /proc/cpuinfo | sort -u | wc -l) + 1))
 
 source '/etc/os-release'
 
-#从VERSION中提取发行版系统的英文名称, 为了在debian/ubuntu下添加相对应的Nginx apt源
 VERSION=$(echo "${VERSION}" | awk -F "[()]" '{print $2}')
 
 check_system() {
@@ -387,7 +386,6 @@ modify_nginx_other() {
     sed -i "/returc/c \\\t\\t\\treturn 302 https://www.idleleo.com/helloworld;" ${nginx_conf}
     sed -i "/locatioc/c \\\t\\tlocation \/" ${nginx_conf}
     sed -i "/error_page   500 502 503 504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
-    #sed -i "27i \\\tproxy_intercept_errors on;"  ${nginx_dir}/conf/nginx.conf
 }
 
 modify_path() {
@@ -409,16 +407,13 @@ modify_UUID() {
 }
 
 web_camouflage() {
-    ##请注意 这里和LNMP脚本的默认路径冲突, 千万不要在安装了LNMP的环境下使用本脚本, 否则后果自负
     judge "web 站点伪装"
 }
 
 xray_privilege_escalation() {
     if [[ -n "$(grep "User=nobody" ${xray_systemd_file})" ]]; then
-        #echo -e "${OK} ${GreenBG} 检测到Xray权限不足, 将提高Xray权限至root ${Font}"
         echo -e "${OK} ${GreenBG} 检测到 Xray 的权限控制, 启动擦屁股程序 ${Font}"
         systemctl stop xray
-        #sed -i "s/User=nobody/User=root/" ${xray_systemd_file}
         chmod -fR a+rw /var/log/xray/
         chown -fR nobody:${cert_group} /var/log/xray/
         chown -R nobody:${cert_group} ${ssl_chainpath}/*
@@ -467,11 +462,7 @@ xray_update() {
     #wget -N --no-check-certificate https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh
     #wget -N --no-check-certificate https://raw.githubusercontent.com/XTLS/Xray-install/main/install-dat-release.sh
     if [[ -d /usr/local/etc/xray ]]; then
-        #echo -e "${OK} ${GreenBG} 恢复xray原权限 ${Font}"
         systemctl stop xray
-        #sed -i "s/User=root/User=nobody/" ${xray_systemd_file}
-        #systemctl daemon-reload
-        #systemctl start xray
         sleep 1
         bash <(curl -L -s https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh)
         sleep 1
@@ -481,13 +472,6 @@ xray_update() {
     else
         echo -e "${GreenBG} 若更新无效, 建议直接卸载再安装！ ${Font}"
         systemctl stop xray
-        #systemctl disable xray.service --now
-        #mv -f /etc/xray/ /usr/local/etc/
-        #rm -rf /usr/bin/xray/
-        #rm -rf /etc/systemd/system/xray.service
-        #rm -rf /lib/systemd/system/xray@.service
-        #rm -rf /etc/init.d/xray
-        #systemctl daemon-reload
         sleep 1
         bash <(curl -L -s https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh)
         sleep 1

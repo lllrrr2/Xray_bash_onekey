@@ -92,7 +92,7 @@ check_system() {
         rm /var/cache/apt/archives/lock
         $INS update
     else
-        echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内, 安装中断 ${Font}"
+        echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内, 安装中断! ${Font}"
         exit 1
     fi
 
@@ -116,7 +116,7 @@ is_root() {
         echo -e "${OK} ${GreenBG} 当前用户是 root用户, 进入安装流程 ${Font}"
         sleep 2
     else
-        echo -e "${Error} ${RedBG} 当前用户不是 root用户, 请切换到 root用户 后重新执行脚本 ${Font}"
+        echo -e "${Error} ${RedBG} 当前用户不是 root用户, 请切换到 root用户 后重新执行脚本! ${Font}"
         exit 1
     fi
 }
@@ -331,7 +331,7 @@ nginx_upstream_server_set() {
         *) ;;
         esac
     else
-        echo -e "${Error} ${RedBG} 当前模式不支持此操作 ${Font}"
+        echo -e "${Error} ${RedBG} 当前模式不支持此操作! ${Font}"
     fi
 }
 
@@ -501,7 +501,7 @@ nginx_exist_check() {
         echo -e "${OK} ${GreenBG} Nginx 已存在, 跳过编译安装过程 ${Font}"
         sleep 2
     elif [[ -d "/usr/local/nginx/" ]]; then
-        echo -e "${Error} ${YellowBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装! ${Font}"
+        echo -e "${Error} ${RedBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装! ${Font}"
         exit 1
     else
         nginx_install
@@ -615,7 +615,7 @@ domain_check() {
         echo -e "${OK} ${GreenBG} 域名DNS 解析IP 与 公网IP 匹配 ${Font}"
         sleep 2
     else
-        echo -e "${Error} ${RedBG} 请确保域名添加了正确的 A/AAAA 记录, 否则将无法正常使用 Xray ${Font}"
+        echo -e "${Warning} ${YellowBG} 请确保域名添加了正确的 A/AAAA 记录, 否则将无法正常使用 Xray ${Font}"
         echo -e "${Error} ${RedBG} 域名DNS 解析IP 与 公网IP 不匹配, 请选择: ${Font}" 
         echo "1: 继续安装"
         echo "2: 重新输入"
@@ -1190,7 +1190,7 @@ tls_type() {
                 sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;/' $nginx_conf
                 echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
             else
-                echo -e "${Warning} ${YellowBG} XTLS最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
+                echo -e "${Error} ${RedBG} XTLS最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
                 tls_type
             fi
         else
@@ -1214,15 +1214,15 @@ tls_type() {
 }
 
 show_access_log() {
-    [ -f ${xray_access_log} ] && tail -f ${xray_access_log} || echo -e "${Error} ${RedBG} log文件不存在 ${Font}"
+    [ -f ${xray_access_log} ] && tail -f ${xray_access_log} || echo -e "${Error} ${RedBG} log文件不存在! ${Font}"
 }
 
 show_error_log() {
-    [ -f ${xray_error_log} ] && tail -f ${xray_error_log} || echo -e "${Error} ${RedBG} log文件不存在 ${Font}"
+    [ -f ${xray_error_log} ] && tail -f ${xray_error_log} || echo -e "${Error} ${RedBG} log文件不存在! ${Font}"
 }
 
 ssl_update_manuel() {
-    [ -f ${amce_sh_file} ] && "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" || echo -e "${Error} ${RedBG} 证书签发工具不存在, 请确认你是否使用了自己的证书 ${Font}"
+    [ -f ${amce_sh_file} ] && "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" || echo -e "${Error} ${RedBG} 证书签发工具不存在, 请确认你是否使用了自己的证书! ${Font}"
     domain="$(info_extraction '\"add\"')"
     "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc
 }
@@ -1441,7 +1441,7 @@ update_sh() {
 }
 
 maintain() {
-    echo -e "${Error} ${RedBG} 该选项暂时无法使用 ${Font}"
+    echo -e "${Error} ${RedBG} 该选项暂时无法使用! ${Font}"
     echo -e "${Error} ${RedBG} $1 ${Font}"
     exit 0
 }
@@ -1729,7 +1729,7 @@ menu() {
         ;;
     *)
         clear
-        echo -e "${Error} ${RedBG} 请输入正确的数字 ${Font}"
+        echo -e "${Error} ${RedBG} 请输入正确的数字! ${Font}"
         bash idleleo
         ;;
     esac

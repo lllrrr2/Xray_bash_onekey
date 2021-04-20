@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.5.9.1"
+shell_version="1.5.9.2"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -216,8 +216,8 @@ port_set() {
         read -rp "请输入连接端口 (default:443):" port
         [[ -z ${port} ]] && port="443"
         if [[ ${port} -le 0 ]] || [[ ${port} -gt 65535 ]]; then
-            echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值 ${Font}"
-            exit 1
+            echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值! ${Font}"
+            port_set
         fi
     fi
 }
@@ -230,8 +230,8 @@ inbound_port_set() {
         [yY][eE][sS] | [yY])
             read -rp "请输入自定义 inbound_port (请勿与连接端口相同！):" xport
             if [[ ${xport} -le 0 ]] || [[ ${xport} -gt 65535 ]]; then
-                echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值 ${Font}"
-                exit 1
+                echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值! ${Font}"
+                inbound_port_set
             fi
             echo -e "${OK} ${GreenBG} inbound_port: ${xport} ${Font}"
             ;;
@@ -448,7 +448,7 @@ xray_install() {
         [[ -f ${xray_default_conf} ]] && rm -rf ${xray_default_conf}
         ln -s ${xray_conf} ${xray_default_conf}
     else
-        echo -e "${Error} ${RedBG} Xray 安装文件下载失败, 请检查下载地址是否可用 ${Font}"
+        echo -e "${Error} ${RedBG} Xray 安装文件下载失败, 请检查下载地址是否可用! ${Font}"
         exit 4
     fi
     # 清除临时文件
@@ -501,7 +501,7 @@ nginx_exist_check() {
         echo -e "${OK} ${GreenBG} Nginx 已存在, 跳过编译安装过程 ${Font}"
         sleep 2
     elif [[ -d "/usr/local/nginx/" ]]; then
-        echo -e "${Error} ${YellowBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装 ${Font}"
+        echo -e "${Error} ${YellowBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装! ${Font}"
         exit 1
     else
         nginx_install
@@ -616,11 +616,18 @@ domain_check() {
         sleep 2
     else
         echo -e "${Error} ${RedBG} 请确保域名添加了正确的 A/AAAA 记录, 否则将无法正常使用 Xray ${Font}"
-        echo -e "${Error} ${RedBG} 域名DNS 解析IP 与 公网IP 不匹配 是否继续安装 [Y/N]? ${Font}" && read -r install
+        echo -e "${Error} ${RedBG} 域名DNS 解析IP 与 公网IP 不匹配, 请选择: ${Font}" 
+        echo "1: 继续安装"
+        echo "2: 重新输入"
+        echo "3: 终止安装 (默认)"
+        read -r install
         case $install in
-        [yY][eE][sS] | [yY])
+        1)
             echo -e "${GreenBG} 继续安装 ${Font}"
             sleep 2
+            ;;
+        2)
+            domain_check
             ;;
         *)
             echo -e "${Error} ${RedBG} 安装终止 ${Font}"
@@ -1181,10 +1188,11 @@ tls_type() {
         elif [[ $tls_version == 1 ]]; then
             if [[ $shell_mode == "ws"  ]]; then
                 sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;/' $nginx_conf
+                echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
             else
-                sed -i "/\"minVersion\"/c \                \"minVersion\": \"1.1\"," ${xray_conf}  
+                echo -e "${Warning} ${YellowBG} XTLS最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
+                tls_type
             fi
-            echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
         else
             if [[ $shell_mode == "ws"  ]]; then
                 sed -i 's/ssl_protocols.*/ssl_protocols TLSv1.2 TLSv1.3;/' $nginx_conf

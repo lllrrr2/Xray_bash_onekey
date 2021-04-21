@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.3"
+shell_version="1.6.0.4"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -584,7 +584,7 @@ nginx_install() {
 
 nginx_update() {
     if [[ -f "/etc/nginx/sbin/nginx" ]]; then
-        if [[ ${nginx_version} != $(info_extraction '\"nginx_version\"') ]]; then
+        if [[ ${nginx_version} != $(info_extraction '\"nginx_version\"') ]] || [[ ${openssl_version} != $(info_extraction '\"openssl_version\"') ]] || [[ ${jemalloc_version} != $(info_extraction '\"jemalloc_version\"') ]]; then
             if [[ ${shell_mode} == "ws" ]]; then
                 if [[ -f $xray_qr_config_file ]]; then 
                     domain=$(info_extraction '\"host\"')
@@ -1057,7 +1057,9 @@ vless_qr_config_tls_ws() {
   "host": "${domain}",
   "path": "${camouflage}",
   "tls": "TLS",
-  "nginx_version": "${nginx_version}"
+  "nginx_version": "${nginx_version}",
+  "openssl_version": "${openssl_version}",
+  "jemalloc_version": "${jemalloc_version}"
 }
 EOF
 }
@@ -1074,7 +1076,9 @@ vless_qr_config_xtls() {
   "tls": "XTLS",
   "wsport": "${artxport}",
   "wspath": "${artcamouflage}",
-  "nginx_version": "${nginx_version}"
+  "nginx_version": "${nginx_version}",
+  "openssl_version": "${openssl_version}",
+  "jemalloc_version": "${jemalloc_version}"
 }
 EOF
 }
@@ -1495,8 +1499,13 @@ update_sh() {
     echo "${ol_version}" >${version_cmp}
     [[ -z ${ol_version} ]] && clear && echo -e "${Error} ${RedBG}  检测最新版本失败! ${Font}" && bash idleleo
     echo "${shell_version}" >>${version_cmp}
-    if [[ ${shell_version} != "$(sort -rV ${version_cmp} | head -1)" ]]; then
+    newest_version=$(sort -rV ${version_cmp} | head -1)
+    let version_difference=${newest_version:0:3}-${shell_version:0:3}
+    if [[ ${version_difference} != ${newest_version} ]]; then
         echo -e "${GreenBG} 存在新版本, 是否更新 [Y/N]? ${Font}"
+        if [[ ${version_difference} -gt 0 ]]; then
+            echo -e "${Warning} ${YellowBG} 版本跨度较大, 可能存在不兼容情况, 若服务无法正常运行请完全卸载重装! ${Font}"
+        fi
         read -r update_confirm
         case $update_confirm in
         [yY][eE][sS] | [yY])
@@ -1571,14 +1580,19 @@ idleleo_commend() {
         old_version=$(grep "shell_version=" ${idleleo_dir}/install.sh | head -1 | awk -F '=|"' '{print $3}')
         echo "${old_version}" >${version_cmp}
         echo "${shell_version}" >>${version_cmp}
+        oldest_version=$(sort -V ${version_cmp} | head -1)
+        let version_difference=${shell_version:0:3}-${oldest_version:0:3}
         if [[ -z ${old_version} ]]; then
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear
             bash idleleo
-        elif [[ ${shell_version} != "$(sort -V ${version_cmp} | head -1)" ]]; then
+        elif [[ ${shell_version} != ${oldest_version} ]]; then
             rm -rf ${idleleo_dir}/install.sh
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear
+            if [[ ${version_difference} -gt 0 ]]; then
+                echo -e "${Warning} ${YellowBG} 脚本版本跨度较大, 可能存在不兼容情况, 若服务无法正常运行请完全卸载重装! ${Font}"
+            fi
             bash idleleo
         elif [[ ! -L ${idleleo_commend_file} ]]; then
             ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}

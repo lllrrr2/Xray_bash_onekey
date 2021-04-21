@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.5.9.2"
+shell_version="1.6.0.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -213,6 +213,7 @@ create_directory() {
 
 port_set() {
     if [[ "on" != ${old_config_status} ]]; then
+        echo -e "${GreenBG} 确定 连接端口  ${Font}"
         read -rp "请输入连接端口 (default:443):" port
         [[ -z ${port} ]] && port="443"
         if [[ ${port} -le 0 ]] || [[ ${port} -gt 65535 ]]; then
@@ -321,7 +322,7 @@ nginx_upstream_server_set() {
         read -r nginx_upstream_server_fq
         case $nginx_upstream_server_fq in
         [yY][eE][sS] | [yY])
-            read -rp "请输入负载均衡 地址 (host):" upstream_host
+            read -rp "请输入负载均衡 主机 (host):" upstream_host
             read -rp "请输入负载均衡 端口 (port):" upstream_port
             read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight
             sed -i "1a\\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
@@ -591,8 +592,9 @@ ssl_install() {
 }
 
 domain_check() {
+    echo -e "\n${GreenBG} 确定 域名 信息  ${Font}"
     read -rp "请输入你的域名信息 (eg:www.idleleo.com):" domain
-    echo "请选择 公网IP 为 IPv4 或 IPv6"
+    echo -e "${GreenBG} 请选择 公网IP 为 IPv4 或 IPv6 ${Font}"
     echo "1: IPv4 (默认)"
     echo "2: IPv6 (不推荐)"
     read -rp "请输入: " ip_version
@@ -638,7 +640,8 @@ domain_check() {
 }
 
 ip_check() {
-    echo "请选择 公网IP 为 IPv4 或 IPv6"
+    echo -e "\n${GreenBG} 确定 公网IP 信息  ${Font}"
+    echo -e "${GreenBG} 请选择 公网IP 为 IPv4 或 IPv6 ${Font}"
     echo "1: IPv4 (默认)"
     echo "2: IPv6 (不推荐)"
     read -rp "请输入: " ip_version
@@ -964,9 +967,7 @@ acme_cron_update() {
 vless_qr_config_tls_ws() {
     cat >$xray_qr_config_file <<-EOF
 {
-  "v": "2",
-  "ps": "${domain}",
-  "add": "${domain}",
+  "host": "${domain}",
   "port": "${port}",
   "inbound_port": "${xport}",
   "idc": "${UUID5_char}",
@@ -982,9 +983,7 @@ EOF
 vless_qr_config_xtls() {
     cat >$xray_qr_config_file <<-EOF
 {
-  "v": "2",
-  "ps": "${domain}",
-  "add": "${domain}",
+  "host": "${domain}",
   "port": "${port}",
   "idc": "${UUID5_char}",
   "id": "${UUID}",
@@ -1000,9 +999,7 @@ EOF
 vless_qr_config_ws_only() {
     cat >$xray_qr_config_file <<-EOF
 {
-  "v": "2",
-  "ps": "${local_ip}",
-  "add": "${local_ip}",
+  "host": "${local_ip}",
   "port": "${xport}",
   "idc": "${UUID5_char}",
   "id": "${UUID}",
@@ -1022,11 +1019,11 @@ vless_urlquote()
 vless_qr_link_image() {
     #vless_link="vless://$(base64 -w 0 $xray_qr_config_file)"
     if [[ ${shell_mode} == "ws" ]]; then
-        vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"add\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))?ed=2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"add\"'))&type=ws#$(vless_urlquote $(info_extraction '\"add\"'))+ws%E5%8D%8F%E8%AE%AE"
+        vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))?ed=2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
     elif [[ ${shell_mode} == "xtls" ]]; then
-        vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"add\"')):$(info_extraction '\"port\"')?security=xtls&encryption=none&headerType=none&type=tcp&flow=xtls-rprx-direct#$(vless_urlquote $(info_extraction '\"add\"'))+xtls%E5%8D%8F%E8%AE%AE"
+        vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?security=xtls&encryption=none&headerType=none&type=tcp&flow=xtls-rprx-direct#$(vless_urlquote $(info_extraction '\"host\"'))+xtls%E5%8D%8F%E8%AE%AE"
     elif [[ ${shell_mode} == "wsonly" ]]; then
-        vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"add\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))?ed=2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"add\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
+        vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))?ed=2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
     fi
         {
             echo -e "\n${Red} —————————————— Xray 配置分享 —————————————— ${Font}"
@@ -1038,7 +1035,7 @@ vless_qr_link_image() {
 }
 
 vless_link_image_choice() {
-    echo "请选择生成的分享链接种类:"
+    echo -e "${GreenBG} 请选择生成的分享链接种类: ${Font}"
     echo "1: V2RayN/V2RayNG/Qv2ray"
     read -rp "请输入: " link_version
     [[ -z ${link_version} ]] && link_version=1
@@ -1065,7 +1062,7 @@ basic_information() {
         fi
         echo -e "${Warning} ${YellowBG} VLESS 目前分享链接规范为实验阶段, 请自行判断是否适用 ${Font}"
         echo -e "\n${Red} —————————————— Xray 配置信息 —————————————— ${Font}"
-        echo -e "${Red} 地址 (address):${Font} $(info_extraction '\"add\"') "
+        echo -e "${Red} 主机 (host):${Font} $(info_extraction '\"host\"') "
         echo -e "${Red} 端口 (port):${Font} $(info_extraction '\"port\"') "
         if [[ ${shell_mode} == "ws" ]]; then
             echo -e "${Red} Xray 端口 (inbound_port):${Font} $(info_extraction '\"inbound_port\"') "
@@ -1077,7 +1074,7 @@ basic_information() {
         echo -e "${Red} 传输协议 (network):${Font} $(info_extraction '\"net\"') "
         echo -e "${Red} 底层传输安全 (tls):${Font} $(info_extraction '\"tls\"') "
         if [[ ${shell_mode} != "xtls" ]]; then
-            echo -e "${Red} 路径 (不要落下/):${Font} $(info_extraction '\"path\"') "
+            echo -e "${Red} 路径 (path 不要落下/):${Font} $(info_extraction '\"path\"') "
         else
             echo -e "${Red} 流控 (flow):${Font} xtls-rprx-direct "
             if [[ "$xtls_add_ws" == "on" ]]; then
@@ -1171,7 +1168,7 @@ EOF
 
 tls_type() {
     if [[ -f "/etc/nginx/sbin/nginx" ]] && [[ -f "$nginx_conf" ]] && [[ ${shell_mode} != "wsonly" ]]; then
-        echo "请选择支持的 TLS 版本 (default:2):"
+        echo -e "${GreenBG} 请选择支持的 TLS 版本 (default:2): ${Font}"
         echo "建议选择 TLS1.2 and TLS1.3 (一般模式)"
         echo "1: TLS1.1 TLS1.2 and TLS1.3 (兼容模式)"
         echo "2: TLS1.2 and TLS1.3 (一般模式)"
@@ -1223,7 +1220,7 @@ show_error_log() {
 
 ssl_update_manuel() {
     [ -f ${amce_sh_file} ] && "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" || echo -e "${Error} ${RedBG} 证书签发工具不存在, 请确认你是否使用了自己的证书! ${Font}"
-    domain="$(info_extraction '\"add\"')"
+    domain="$(info_extraction '\"host\"')"
     "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc
 }
 

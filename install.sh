@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.1"
+shell_version="1.6.0.2"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -487,9 +487,9 @@ xray_update() {
 nginx_exist_check() {
     if [[ -f "/etc/nginx/sbin/nginx" ]]; then
         if [[ -d ${nginx_conf_dir} ]]; then
-            rm -rf ${nginx_conf_dir}/*
-            if [[ -f  ${nginx_conf_dir}/original.conf ]]; then 
-                cp -fp ${nginx_conf_dir}/original.conf ${nginx_dir}/conf/nginx.conf
+            rm -rf ${nginx_conf_dir}/*.conf
+            if [[ -f  ${nginx_conf_dir}/original.confbackup ]]; then 
+                cp -fp ${nginx_conf_dir}/original.confbackup ${nginx_dir}/conf/nginx.conf
             else
                 sed -i "/if \(.*\) {$/,+2d" ${nginx_dir}/conf/nginx.conf
                 sed -i "/^include.*\*\.conf;$/d" ${nginx_dir}/conf/nginx.conf
@@ -573,7 +573,7 @@ nginx_install() {
     sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/conf/nginx.conf
     sed -i 's/worker_processes  1;/worker_processes  4;/' ${nginx_dir}/conf/nginx.conf
     sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_dir}/conf/nginx.conf
-    cp -fp ${nginx_dir}/conf/nginx.conf ${nginx_conf_dir}/original.conf
+    cp -fp ${nginx_dir}/conf/nginx.conf ${nginx_conf_dir}/original.confbackup
 
     # 删除临时文件
     rm -rf ../nginx-${nginx_version}
@@ -614,7 +614,7 @@ nginx_update() {
             fi
             service_stop
             rm -rf ${nginx_dir}
-            rm -rf ${nginx_conf_dir}/*
+            rm -rf ${nginx_conf_dir}/*.conf
             sleep 1
             nginx_install
             sleep 1

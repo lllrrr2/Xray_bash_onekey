@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.6"
+shell_version="1.6.1.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -626,6 +626,9 @@ nginx_update() {
             fi
             sleep 1
             service_start
+            sed -i "/\"nginx_version\"/c \  \"nginx_version\": \"${nginx_version}\"," ${xray_qr_config_file}
+            sed -i "/\"openssl_version\"/c \  \"openssl_version\": \"${openssl_version}\"," ${xray_qr_config_file}
+            sed -i "/\"jemalloc_version\"/c \  \"jemalloc_version\": \"${jemalloc_version}\"" ${xray_qr_config_file}
             judge "Nginx 升级"
         else
             echo -e "${OK} ${GreenBG} Nginx 已为最新版 ${Font}"

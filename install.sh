@@ -584,7 +584,7 @@ nginx_install() {
 
 nginx_update() {
     if [[ -f "/etc/nginx/sbin/nginx" ]]; then
-        if [[ -n $(info_extraction '\"nginx_version\"') || ${nginx_version} != $(info_extraction '\"nginx_version\"') ]]; then
+        if [[ ${nginx_version} != $(info_extraction '\"nginx_version\"') ]]; then
             if [[ ${shell_mode} == "ws" ]]; then
                 if [[ -f $xray_qr_config_file ]]; then 
                     domain=$(info_extraction '\"host\"')

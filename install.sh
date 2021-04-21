@@ -613,7 +613,7 @@ nginx_update() {
                 bash idleleo
             fi
             service_stop
-            timeout "即将删除旧版 Nginx !"
+            timeout "删除旧版 Nginx !"
             rm -rf ${nginx_dir}
             rm -rf ${nginx_conf_dir}/*.conf
             sleep 1
@@ -720,7 +720,7 @@ port_exist_check() {
     else
         echo -e "${Error} ${RedBG} 检测到 $1 端口被占用, 以下为 $1 端口占用信息 ${Font}"
         lsof -i:"$1"
-        timeout "尝试自动 kill 占用进程"
+        timeout "尝试自动 kill 占用进程!"
         lsof -i:"$1" | awk '{print $2}' | grep -v "PID" | xargs kill -9
         echo -e "${OK} ${GreenBG} kill 完成 ${Font}"
         sleep 1

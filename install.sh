@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.0"
+shell_version="1.6.0.1"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -553,14 +553,12 @@ nginx_install() {
     --with-http_stub_status_module \
     --with-pcre \
     --with-http_flv_module \
-    –-with-http_geoip_module \
     --with-http_mp4_module \
     --with-http_realip_module \
     --with-http_secure_link_module \
     --with-stream \
     --with-stream_ssl_module \
     --with-stream_realip_module \
-    --with-stream_geoip_module \
     --with-stream_ssl_preread_module \
     --with-http_sub_module \
     --with-http_v2_module \
@@ -593,28 +591,16 @@ nginx_update() {
                     port=$(info_extraction '\"port\"')
                     xport=$(info_extraction '\"inbound_port\"')
                     camouflage=$(info_extraction '\"path\"')
-                fi
-                if [[ 0 -ne $? ]]; then
-                    echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}"
-                    timeout "清空屏幕!"
-                    clear
-                    bash idleleo
-                fi
-                if [[ ! -f $xray_qr_config_file ]]; then
+                    [[ 0 -ne $? ]] && echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}" && timeout "清空屏幕!" && clear && bash idleleo
+                else
                     echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
                 fi
             elif [[ ${shell_mode} == "xtls" ]]; then
                 if [[ -f $xray_qr_config_file ]]; then
                     domain=$(info_extraction '\"host\"')
                     port=$(info_extraction '\"port\"')
-                fi
-                if [[ 0 -ne $? ]]; then
-                    echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}"
-                    timeout "清空屏幕!"
-                    clear
-                    bash idleleo
-                fi
-                if [[ ! -f $xray_qr_config_file ]]; then
+                    [[ 0 -ne $? ]] && echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}" && timeout "清空屏幕!" && clear && bash idleleo
+                else
                     echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
                     timeout "清空屏幕!"
                     clear

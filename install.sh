@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.5"
+shell_version="1.6.0.6"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1054,7 +1054,6 @@ vless_qr_config_tls_ws() {
   "idc": "${UUID5_char}",
   "id": "${UUID}",
   "net": "ws",
-  "host": "${domain}",
   "path": "${camouflage}",
   "tls": "TLS",
   "nginx_version": "${nginx_version}",
@@ -1072,7 +1071,6 @@ vless_qr_config_xtls() {
   "idc": "${UUID5_char}",
   "id": "${UUID}",
   "net": "tcp",
-  "host": "${domain}",
   "tls": "XTLS",
   "wsport": "${artxport}",
   "wspath": "${artcamouflage}",
@@ -1540,6 +1538,12 @@ list() {
         ;;
     crontab)
         acme_cron_update
+        ;;
+    nginx)
+        nginx_update
+        timeout "清空屏幕!"
+        clear
+        bash idleleo
         ;;
     show)
         clear

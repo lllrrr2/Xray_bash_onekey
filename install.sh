@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.4"
+shell_version="1.6.0.5"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1500,8 +1500,8 @@ update_sh() {
     [[ -z ${ol_version} ]] && clear && echo -e "${Error} ${RedBG}  检测最新版本失败! ${Font}" && bash idleleo
     echo "${shell_version}" >>${version_cmp}
     newest_version=$(sort -rV ${version_cmp} | head -1)
-    let version_difference=${newest_version:0:3}-${shell_version:0:3}
-    if [[ ${version_difference} != ${newest_version} ]]; then
+    version_difference=$(echo "${newest_version:0:3}-${shell_version:0:3}"|bc)
+    if [[ ${shell_version} != ${newest_version} ]]; then
         echo -e "${GreenBG} 存在新版本, 是否更新 [Y/N]? ${Font}"
         if [[ ${version_difference} -gt 0 ]]; then
             echo -e "${Warning} ${YellowBG} 版本跨度较大, 可能存在不兼容情况, 若服务无法正常运行请完全卸载重装! ${Font}"
@@ -1581,7 +1581,7 @@ idleleo_commend() {
         echo "${old_version}" >${version_cmp}
         echo "${shell_version}" >>${version_cmp}
         oldest_version=$(sort -V ${version_cmp} | head -1)
-        let version_difference=${shell_version:0:3}-${oldest_version:0:3}
+        version_difference=$(echo "${shell_version:0:3}-${oldest_version:0:3}"|bc)
         if [[ -z ${old_version} ]]; then
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
             clear

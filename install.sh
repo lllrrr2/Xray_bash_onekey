@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.0.2"
+shell_version="1.6.0.3"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -613,6 +613,7 @@ nginx_update() {
                 bash idleleo
             fi
             service_stop
+            timeout "即将删除旧版 Nginx !"
             rm -rf ${nginx_dir}
             rm -rf ${nginx_conf_dir}/*.conf
             sleep 1
@@ -647,7 +648,7 @@ ssl_install() {
 }
 
 domain_check() {
-    echo -e "\n${GreenBG} 确定 域名 信息  ${Font}"
+    echo -e "\n${GreenBG} 确定 域名 信息 ${Font}"
     read -rp "请输入你的域名信息 (eg:www.idleleo.com):" domain
     echo -e "${GreenBG} 请选择 公网IP 为 IPv4 或 IPv6 ${Font}"
     echo "1: IPv4 (默认)"
@@ -695,7 +696,7 @@ domain_check() {
 }
 
 ip_check() {
-    echo -e "\n${GreenBG} 确定 公网IP 信息  ${Font}"
+    echo -e "\n${GreenBG} 确定 公网IP 信息 ${Font}"
     echo -e "${GreenBG} 请选择 公网IP 为 IPv4 或 IPv6 ${Font}"
     echo "1: IPv4 (默认)"
     echo "2: IPv6 (不推荐)"

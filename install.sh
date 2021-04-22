@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.1.0"
+shell_version="1.6.1.1"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -65,6 +65,7 @@ cert_group="nobody"
 nginx_version="1.20.0"
 openssl_version="1.1.1k"
 jemalloc_version="5.2.1"
+read_config_status=1
 xtls_add_ws="off"
 old_config_status="off"
 old_shell_mode="None"
@@ -591,15 +592,28 @@ nginx_update() {
                     port=$(info_extraction '\"port\"')
                     xport=$(info_extraction '\"inbound_port\"')
                     camouflage=$(info_extraction '\"path\"')
-                    [[ 0 -ne $? ]] && echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}" && timeout "清空屏幕!" && clear && bash idleleo
+                    if [[ 0 -eq ${read_config_status} ]]; then
+                        echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}"
+                        timeout "清空屏幕!"
+                        clear 
+                        bash idleleo
+                    fi
                 else
                     echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
+                    timeout "清空屏幕!"
+                    clear
+                    bash idleleo
                 fi
             elif [[ ${shell_mode} == "xtls" ]]; then
                 if [[ -f $xray_qr_config_file ]]; then
                     domain=$(info_extraction '\"host\"')
                     port=$(info_extraction '\"port\"')
-                    [[ 0 -ne $? ]] && echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}" && timeout "清空屏幕!" && clear && bash idleleo
+                    if [[ 0 -eq ${read_config_status} ]]; then
+                        echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}"
+                        timeout "清空屏幕!"
+                        clear 
+                        bash idleleo
+                    fi
                 else
                     echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
                     timeout "清空屏幕!"
@@ -861,7 +875,7 @@ old_config_input () {
         UUID=$(info_extraction '\id\"')
         camouflage=$(info_extraction '\"path\"')
     fi
-    if [[ 0 -ne $? ]]; then
+    if [[ 0 -eq ${read_config_status} ]]; then
         echo -e "${GreenBG} 检测到旧配置文件不完整, 是否保留旧配置文件 [Y/N]? ${Font}"
         read -r old_config_input_fq
         case $old_config_input_fq in
@@ -1137,6 +1151,7 @@ vless_link_image_choice() {
 
 info_extraction() {
     grep "$1" $xray_qr_config_file | awk -F '"' '{print $4}'
+    [[ 0 -ne $? ]] && read_config_status=0
 }
 
 basic_information() {

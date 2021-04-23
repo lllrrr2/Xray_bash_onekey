@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.2.2"
+shell_version="1.6.2.3"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1079,6 +1079,8 @@ secure_ssh() {
         systemctl enable fail2ban
         sleep 1
         judge "fail2ban 启动"
+        timeout "清空屏幕!"
+        clear
     fi
     if [[ $fail2ban_fq == 2 ]]; then
         [[ -f /etc/fail2ban/jail.local ]] && rm -rf /etc/fail2ban/jail.local
@@ -1086,9 +1088,16 @@ secure_ssh() {
         sleep 1
         systemctl disable fail2ban
         judge "fail2ban 停止"
+        timeout "清空屏幕!"
+        clear
     fi
     if [[ $fail2ban_fq == 3 ]]; then
+        echo -e "${GreenBG} fail2ban 运行状态: ${Font}"
         systemctl status fail2ban
+        echo -e "${GreenBG} fail2ban 状态: ${Font}"
+        fail2ban-client status
+        echo -e "${GreenBG} fail2ban SSH 封锁情况: ${Font}"
+        fail2ban-client status sshd
     fi
 }
 
@@ -1825,8 +1834,6 @@ menu() {
         ;;
     18)
         secure_ssh
-        timeout "清空屏幕!"
-        clear
         bash idleleo
         ;;
     19)

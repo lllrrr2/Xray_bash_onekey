@@ -1063,7 +1063,8 @@ secure_ssh() {
     echo -e "${GreenBG} 设置 Fail2ban 用于防止暴力破解, 请选择: ${Font}"
     echo "1. 安装/启动 Fail2ban"
     echo "2. 卸载/停止 Fail2ban"
-    echo "3. 查看 Fail2ban 状态"
+    echo "3. 重启 Fail2ban"
+    echo "4. 查看 Fail2ban 状态"
     read -rp "请输入: " fail2ban_fq
     [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
     if [[ $fail2ban_fq == 1 ]]; then
@@ -1085,10 +1086,6 @@ secure_ssh() {
         judge "Fail2ban 配置"
         systemctl start fail2ban
         sleep 1
-        systemctl daemon-reload
-        sleep 1
-        systemctl restart fail2ban
-        sleep 1
         systemctl enable fail2ban
         sleep 1
         judge "Fail2ban 启动"
@@ -1105,6 +1102,15 @@ secure_ssh() {
         clear
     fi
     if [[ $fail2ban_fq == 3 ]]; then
+        systemctl daemon-reload
+        sleep 1
+        systemctl restart fail2ban
+        sleep 1
+        judge "Fail2ban 重启"
+        timeout "清空屏幕!"
+        clear
+    fi
+    if [[ $fail2ban_fq == 4 ]]; then
         echo -e "${GreenBG} Fail2ban 配置状态: ${Font}"
         fail2ban-client status
         echo -e "${GreenBG} Fail2ban SSH 封锁情况: ${Font}"

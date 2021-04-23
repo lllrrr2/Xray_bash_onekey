@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.2"
+shell_version="1.6.3.3"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1729,9 +1729,9 @@ menu() {
     echo -e "${Green}17.${Font} 安装 TCP 加速脚本"
     echo -e "${Green}18.${Font} 设置 Fail2ban 防暴力破解"
     echo -e "${Green}19.${Font} 安装 MTproxy (不推荐使用)"
-    echo -e "${Green}20.${Font} 证书 有效期更新"
-    echo -e "${Green}21.${Font} 卸载 Xray"
-    echo -e "${Green}22.${Font} 更新 证书 crontab 计划任务"
+    echo -e "${Green}20.${Font} 更新 证书 crontab 计划任务"
+    echo -e "${Green}21.${Font} 证书 有效期更新"
+    echo -e "${Green}22.${Font} 卸载 Xray"
     echo -e "${Green}23.${Font} 清空 证书文件"
     echo -e "${Green}24.${Font} 退出 \n"
 
@@ -1865,6 +1865,12 @@ menu() {
         mtproxy_sh
         ;;
     20)
+        acme_cron_update
+        timeout "清空屏幕!"
+        clear
+        bash idleleo
+        ;;
+    21)
         service_stop
         ssl_update_manuel
         service_restart
@@ -1872,14 +1878,8 @@ menu() {
         clear
         bash idleleo
         ;;
-    21)
-        uninstall_all
-        timeout "清空屏幕!"
-        clear
-        bash idleleo
-        ;;
     22)
-        acme_cron_update
+        uninstall_all
         timeout "清空屏幕!"
         clear
         bash idleleo

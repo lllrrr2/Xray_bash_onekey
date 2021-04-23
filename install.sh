@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.1"
+shell_version="1.6.3.2"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1071,9 +1071,11 @@ secure_ssh() {
         judge "Fail2ban 安装"
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-        elif [[ -z $(grep "filter   = sshd" /etc/fail2ban/jail.local) ]]; then
+        fi
+        if [[ -z $(grep "filter   = sshd" /etc/fail2ban/jail.local) ]]; then
             sed -i "/sshd_log/i \enabled  = true\\nfilter   = sshd\\nmaxretry = 5\\nbantime  = 604800" /etc/fail2ban/jail.local
-        elif [[ ${shell_mode} != "wsonly" ]] && [[ -z $(grep "filter   = nginx-botsearch" /etc/fail2ban/jail.local) ]]; then
+        fi
+        if [[ ${shell_mode} != "wsonly" ]] && [[ -z $(grep "filter   = nginx-botsearch" /etc/fail2ban/jail.local) ]]; then
             sed -i "/nginx_error_log/d" /etc/fail2ban/jail.local
             sed -i "/^port    = http,https$/c \\port    = http,https,8080" /etc/fail2ban/jail.local
             sed -i "/^maxretry = 2$/c \\maxretry = 5" /etc/fail2ban/jail.local

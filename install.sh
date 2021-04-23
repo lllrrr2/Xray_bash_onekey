@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.2.1"
+shell_version="1.6.2.2"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1072,20 +1072,21 @@ secure_ssh() {
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
             sed -i "/sshd_log/i \enabled  = true\\nfilter   = sshd\\naction   = iptables[name=SSH, port=ssh, protocol=tcp]\\nmaxretry = 5\\nbantime  = 604800" /etc/fail2ban/jail.local
+            judge "fail2ban 配置"
         fi
         systemctl start fail2ban
         sleep 1
         systemctl enable fail2ban
         sleep 1
+        judge "fail2ban 启动"
     fi
-    judge "fail2ban 配置"
     if [[ $fail2ban_fq == 2 ]]; then
         [[ -f /etc/fail2ban/jail.local ]] && rm -rf /etc/fail2ban/jail.local
         systemctl stop fail2ban
         sleep 1
         systemctl disable fail2ban
+        judge "fail2ban 停止"
     fi
-    judge "fail2ban 停止"
     if [[ $fail2ban_fq == 3 ]]; then
         systemctl status fail2ban
     fi

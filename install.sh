@@ -1827,6 +1827,7 @@ menu() {
         secure_ssh
         timeout "清空屏幕!"
         clear
+        bash idleleo
         ;;
     19)
         clear

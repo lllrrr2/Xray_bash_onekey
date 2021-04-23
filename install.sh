@@ -1070,7 +1070,7 @@ secure_ssh() {
     read -rp "请输入: " fail2ban_fq
     [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
     if [[ $fail2ban_fq == 1 ]]; then
-        ${INS} install -y fail2ban
+        ${INS} -y install fail2ban
         judge "fail2ban 安装"
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local

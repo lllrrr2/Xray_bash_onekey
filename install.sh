@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.1.1"
+shell_version="1.6.2.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1047,7 +1047,7 @@ service_stop(){
 }
 
 acme_cron_update() {
-    wget -N -P ${idleleo_dir} --no-check-certificate https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/ssl_update.sh && chmod +x ${idleleo_dir}/ssl_update.sh
+    wget -N -P ${idleleo_dir} --no-check-certificate https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/ssl_update.sh && chmod +x ${ssl_update_file}
     if [[ $(crontab -l | grep -c "ssl_update.sh") -lt 1 ]]; then
         if [[ "${ID}" == "centos" ]]; then
             #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
@@ -1060,6 +1060,38 @@ acme_cron_update() {
         fi
     fi
     judge "cron 计划任务更新"
+}
+
+secure_ssh() {
+    echo -e "${GreenBG} 设置 fail2ban 用于防止暴力破解, 请选择: ${Font}"
+    echo "1. 启动/安装 fail2ban"
+    echo "2. 停止/卸载 fail2ban"
+    echo "3. fail2ban 状态"
+    read -rp "请输入: " fail2ban_fq
+    [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
+    if [[ $fail2ban_fq == 1 ]]; then
+        ${INS} -y install fail2ban
+        judge "fail2ban 安装"
+        if [[ ! -f /etc/fail2ban/jail.local ]]; then
+            cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+            sed -i "/sshd_log/i \enabled  = true\\nfilter   = sshd\\naction   = iptables[name=SSH, port=ssh, protocol=tcp]\\nmaxretry = 5\\nbantime  = 604800" /etc/fail2ban/jail.local
+        fi
+        systemctl start fail2ban
+        sleep 1
+        systemctl enable fail2ban
+        sleep 1
+    fi
+    judge "fail2ban 配置"
+    if [[ $fail2ban_fq == 2 ]]; then
+        [[ -f /etc/fail2ban/jail.local ]] && rm -rf /etc/fail2ban/jail.local
+        systemctl stop fail2ban
+        sleep 1
+        systemctl disable fail2ban
+    fi
+    judge "fail2ban 停止"
+    if [[ $fail2ban_fq == 3 ]]; then
+        systemctl status fail2ban
+    fi
 }
 
 vless_qr_config_tls_ws() {
@@ -1664,12 +1696,13 @@ menu() {
     echo -e "${Green}16.${Font} 查看 所有服务"
     echo -e "—————————————— 其他选项 ——————————————"
     echo -e "${Green}17.${Font} 安装 TCP 加速脚本"
-    echo -e "${Green}18.${Font} 安装 MTproxy (不推荐使用)"
-    echo -e "${Green}19.${Font} 证书 有效期更新"
-    echo -e "${Green}20.${Font} 卸载 Xray"
-    echo -e "${Green}21.${Font} 更新 证书 crontab 计划任务"
-    echo -e "${Green}22.${Font} 清空 证书文件"
-    echo -e "${Green}23.${Font} 退出 \n"
+    echo -e "${Green}18.${Font} 配置 fail2ban 防暴力破解"
+    echo -e "${Green}19.${Font} 安装 MTproxy (不推荐使用)"
+    echo -e "${Green}20.${Font} 证书 有效期更新"
+    echo -e "${Green}21.${Font} 卸载 Xray"
+    echo -e "${Green}22.${Font} 更新 证书 crontab 计划任务"
+    echo -e "${Green}23.${Font} 清空 证书文件"
+    echo -e "${Green}24.${Font} 退出 \n"
 
     read -rp "请输入数字: " menu_num
     case $menu_num in
@@ -1793,10 +1826,15 @@ menu() {
         bbr_boost_sh
         ;;
     18)
+        secure_ssh
+        timeout "清空屏幕!"
+        clear
+        ;;
+    19)
         clear
         mtproxy_sh
         ;;
-    19)
+    20)
         service_stop
         ssl_update_manuel
         service_restart
@@ -1804,26 +1842,26 @@ menu() {
         clear
         bash idleleo
         ;;
-    20)
+    21)
         uninstall_all
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    21)
+    22)
         acme_cron_update
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    22)
+    23)
         delete_tls_key_and_crt
         rm -rf ${ssl_chainpath}/*
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    23)
+    24)
         timeout "清空屏幕!"
         clear
         exit 0

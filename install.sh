@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.2.3"
+shell_version="1.6.3.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1060,25 +1060,32 @@ acme_cron_update() {
 
 secure_ssh() {
     check_system
-    echo -e "${GreenBG} 设置 fail2ban 用于防止暴力破解, 请选择: ${Font}"
-    echo "1. 安装/启动 fail2ban"
-    echo "2. 卸载/停止 fail2ban"
-    echo "3. 查看 fail2ban 状态"
+    echo -e "${GreenBG} 设置 Fail2ban 用于防止暴力破解, 请选择: ${Font}"
+    echo "1. 安装/启动 Fail2ban"
+    echo "2. 卸载/停止 Fail2ban"
+    echo "3. 查看 Fail2ban 状态"
     read -rp "请输入: " fail2ban_fq
     [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
     if [[ $fail2ban_fq == 1 ]]; then
         ${INS} -y install fail2ban
-        judge "fail2ban 安装"
+        judge "Fail2ban 安装"
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-            sed -i "/sshd_log/i \enabled  = true\\nfilter   = sshd\\naction   = iptables[name=SSH, port=ssh, protocol=tcp]\\nmaxretry = 5\\nbantime  = 604800" /etc/fail2ban/jail.local
-            judge "fail2ban 配置"
+        elif [[ -n $(grep "filter   = sshd" /etc/fail2ban/jail.local) ]]; then
+            sed -i "/sshd_log/i \enabled  = true\\nfilter   = sshd\\nmaxretry = 5\\nbantime  = 604800" /etc/fail2ban/jail.local
+        elif [[ ${shell_mode} != "wsonly" ]] && [[ -n $(grep "filter   = nginx-botsearch" /etc/fail2ban/jail.local) ]]; then
+            sed -i "/nginx_error_log/d" /etc/fail2ban/jail.local
+            sed -i "/^port    = http,https$/c \\port    = http,https,8080" /etc/fail2ban/jail.local
+            sed -i "/^maxretry = 2$/c \\maxretry = 5" /etc/fail2ban/jail.local
+            sed -i "/nginx-botsearch/i \[nginx-badbots]\\n\\nenabled  = true\\nfilter   = apache-badbots\\nlogpath  = /etc/nginx/logs/access.log\\nbantime  = 604800\\nmaxretry = 5\\n" /etc/fail2ban/jail.local
+            sed -i "/nginx-botsearch/a \\\nenabled  = true\\nfilter   = nginx-botsearch\\nlogpath  = /etc/nginx/logs/access.log\\n           /etc/nginx/logs/error.log\\nbantime  = 604800" /etc/fail2ban/jail.local
         fi
+        judge "Fail2ban 配置"
         systemctl start fail2ban
         sleep 1
         systemctl enable fail2ban
         sleep 1
-        judge "fail2ban 启动"
+        judge "Fail2ban 启动"
         timeout "清空屏幕!"
         clear
     fi
@@ -1087,16 +1094,21 @@ secure_ssh() {
         systemctl stop fail2ban
         sleep 1
         systemctl disable fail2ban
-        judge "fail2ban 停止"
+        judge "Fail2ban 停止"
         timeout "清空屏幕!"
         clear
     fi
     if [[ $fail2ban_fq == 3 ]]; then
-        echo -e "${GreenBG} fail2ban 配置状态: ${Font}"
+        echo -e "${GreenBG} Fail2ban 配置状态: ${Font}"
         fail2ban-client status
-        echo -e "${GreenBG} fail2ban SSH 封锁情况: ${Font}"
+        echo -e "${GreenBG} Fail2ban SSH 封锁情况: ${Font}"
         fail2ban-client status sshd
-        echo -e "${GreenBG} fail2ban 运行状态: ${Font}"
+        if [[ ${shell_mode} != "wsonly" ]]; then
+            echo -e "${GreenBG} Fail2ban Nginx 封锁情况: ${Font}"
+            fail2ban-client status nginx-badbots
+            fail2ban-client status nginx-botsearch
+        fi 
+        echo -e "${GreenBG} Fail2ban 运行状态: ${Font}"
         systemctl status fail2ban
     fi
 }
@@ -1703,7 +1715,7 @@ menu() {
     echo -e "${Green}16.${Font} 查看 所有服务"
     echo -e "—————————————— 其他选项 ——————————————"
     echo -e "${Green}17.${Font} 安装 TCP 加速脚本"
-    echo -e "${Green}18.${Font} 配置 fail2ban 防暴力破解"
+    echo -e "${Green}18.${Font} 设置 Fail2ban 防暴力破解"
     echo -e "${Green}19.${Font} 安装 MTproxy (不推荐使用)"
     echo -e "${Green}20.${Font} 证书 有效期更新"
     echo -e "${Green}21.${Font} 卸载 Xray"

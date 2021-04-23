@@ -1061,9 +1061,9 @@ acme_cron_update() {
 secure_ssh() {
     check_system
     echo -e "${GreenBG} 设置 fail2ban 用于防止暴力破解, 请选择: ${Font}"
-    echo "1. 启动/安装 fail2ban"
-    echo "2. 停止/卸载 fail2ban"
-    echo "3. fail2ban 状态"
+    echo "1. 安装/启动 fail2ban"
+    echo "2. 卸载/停止 fail2ban"
+    echo "3. 查看 fail2ban 状态"
     read -rp "请输入: " fail2ban_fq
     [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
     if [[ $fail2ban_fq == 1 ]]; then

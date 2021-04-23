@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.2.0"
+shell_version="1.6.2.1"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -97,12 +97,6 @@ check_system() {
         exit 1
     fi
 
-    if [[ $(grep "nogroup" /etc/group) ]]; then
-        cert_group="nogroup"
-    fi
-
-    $INS install dbus
-
     #systemctl stop firewalld
     #systemctl disable firewalld
     #echo -e "${OK} ${GreenBG} firewalld 已关闭 ${Font}"
@@ -133,7 +127,7 @@ judge() {
 }
 
 dependency_install() {
-    ${INS} install wget git lsof -y
+    ${INS} install dbus wget git lsof -y
 
     if [[ "${ID}" == "centos" ]]; then
         ${INS} -y install iputils
@@ -413,6 +407,7 @@ web_camouflage() {
 }
 
 xray_privilege_escalation() {
+    [[ $(grep "nogroup" /etc/group) ]] && cert_group="nogroup"
     if [[ -n "$(grep "User=nobody" ${xray_systemd_file})" ]]; then
         echo -e "${OK} ${GreenBG} 检测到 Xray 的权限控制, 启动擦屁股程序 ${Font}"
         systemctl stop xray
@@ -762,6 +757,7 @@ acme() {
         if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc --force; then
             chmod -f a+rw ${ssl_chainpath}/xray.crt
             chmod -f a+rw ${ssl_chainpath}/xray.key
+            [[ $(grep "nogroup" /etc/group) ]] && cert_group="nogroup"
             chown -R nobody:${cert_group} ${ssl_chainpath}/*
             echo -e "${OK} ${GreenBG} 证书配置成功 ${Font}"
             sleep 2
@@ -1063,6 +1059,7 @@ acme_cron_update() {
 }
 
 secure_ssh() {
+    check_system
     echo -e "${GreenBG} 设置 fail2ban 用于防止暴力破解, 请选择: ${Font}"
     echo "1. 启动/安装 fail2ban"
     echo "2. 停止/卸载 fail2ban"

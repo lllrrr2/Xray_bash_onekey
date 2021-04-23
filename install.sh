@@ -1092,12 +1092,12 @@ secure_ssh() {
         clear
     fi
     if [[ $fail2ban_fq == 3 ]]; then
-        echo -e "${GreenBG} fail2ban 运行状态: ${Font}"
-        systemctl status fail2ban
         echo -e "${GreenBG} fail2ban 配置状态: ${Font}"
         fail2ban-client status
         echo -e "${GreenBG} fail2ban SSH 封锁情况: ${Font}"
         fail2ban-client status sshd
+        echo -e "${GreenBG} fail2ban 运行状态: ${Font}"
+        systemctl status fail2ban
     fi
 }
 

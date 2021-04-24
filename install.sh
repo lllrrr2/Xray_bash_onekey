@@ -491,7 +491,6 @@ nginx_exist_check() {
                 sed -i "/^include.*\*\.conf;$/d" ${nginx_dir}/conf/nginx.conf
             fi
         else
-            mkdir -p ${nginx_conf_dir}
             sed -i "/if \(.*\) {$/,+2d" ${nginx_dir}/conf/nginx.conf
             sed -i "/^include.*\*\.conf;$/d" ${nginx_dir}/conf/nginx.conf
         fi

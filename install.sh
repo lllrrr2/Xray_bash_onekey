@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.3"
+shell_version="1.6.3.4"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -198,7 +198,7 @@ basic_optimization() {
 }
 
 create_directory() {
-    if [[ ${shell_mode} == "wsonly" ]]; then
+    if [[ ${shell_mode} != "wsonly" ]]; then
         [[ ! -d "${nginx_conf_dir}" ]] && mkdir -p ${nginx_conf_dir}
     fi
     [[ ! -d "${xray_conf_dir}" ]] && mkdir -p ${xray_conf_dir}

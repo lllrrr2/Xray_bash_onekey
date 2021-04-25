@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.7"
+shell_version="1.6.3.8"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -202,6 +202,7 @@ create_directory() {
         [[ ! -d "${nginx_conf_dir}" ]] && mkdir -p ${nginx_conf_dir}
     fi
     [[ ! -d "${xray_conf_dir}" ]] && mkdir -p ${xray_conf_dir}
+    [[ ! -d "${ssl_chainpath}" ]] && mkdir -p ${ssl_chainpath}
     [[ ! -d "${idleleo_dir}/info" ]] && mkdir -p ${idleleo_dir}/info
     [[ ! -d "${idleleo_tmp}" ]] && mkdir -p ${idleleo_tmp}
 }
@@ -240,26 +241,53 @@ inbound_port_set() {
 }
 
 firewall_set() {
-    iptables -A INPUT -i lo -j ACCEPT
-    iptables -A OUTPUT -o lo -j ACCEPT
-    if [[ ${shell_mode} != "wsonly" ]] && [[ "$xtls_add_ws" == "off" ]]; then
-        iptables -A INPUT -p tcp -m multiport --dport 80,443,${port} -j ACCEPT
-        iptables -A INPUT -p udp --dport ${port} -j ACCEPT
-        iptables -A OUTPUT -p tcp -m multiport --sport 80,443,${port} -j ACCEPT
-        iptables -A OUTPUT -p udp --sport ${port} -j ACCEPT
-        #iptables -A INPUT -p udp --dport 1024:65535 -j ACCEPT
+    if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
+        if [[ ${shell_mode} != "wsonly" ]] && [[ "$xtls_add_ws" == "off" ]]; then
+            firewall-cmd --permanent --add-port=22/tcp
+            firewall-cmd --permanent --add-port=80/tcp
+            firewall-cmd --permanent --add-port=443/tcp
+            firewall-cmd --permanent --add-port=1024-65535/udp
+            firewall-cmd --permanent --add-port=${port}/tcp
+            firewall-cmd --permanent --add-port=${port}/udp
+            firewall-cmd --reload
+        else
+            firewall-cmd --permanent --add-port=22/tcp
+            firewall-cmd --permanent --add-port=${xport}/tcp
+            firewall-cmd --permanent --add-port=${xport}/udp
+        fi
+        firewall-cmd --reload
+        wait
+        echo -e "${OK} ${GreenBG} 开放防火墙相关端口 ${Font}"
+        echo -e "${Green} 是否启动 防火墙 [Y/N]? ${Font}"
+        read -r firewall_set_fq
+        case $firewall_set_fq in
+        [yY][eE][sS] | [yY])
+            systemctl enable firewalld
+            ;;
+        *) ;;
+        esac
     else
-        iptables -A INPUT -p tcp --dport ${xport} -j ACCEPT
-        iptables -A INPUT -p udp --dport ${xport} -j ACCEPT
-        iptables -A OUTPUTT -p tcp --sport ${xport} -j ACCEPT
-        iptables -A OUTPUT -p udp --sport ${xport} -j ACCEPT
+        if [[ ${shell_mode} != "wsonly" ]]; then
+            ufw allow 22,80,443/tcp
+            ufw allow 1024:65535/udp
+            ufw allow ${port}
+        else
+            ufw allow 22/tcp
+            ufw allow ${xport}
+        fi
+        ufw reload
+        echo -e "${OK} ${GreenBG} 开放防火墙相关端口 ${Font}"
+        echo -e "${Green} 是否启动 防火墙 [Y/N]? ${Font}"
+        read -r firewall_set_fq
+        case $firewall_set_fq in
+        [yY][eE][sS] | [yY])
+            ufw enable
+            ;;
+        *) ;;
+        esac
     fi
-    echo -e "${OK} ${GreenBG} 开放防火墙相关端口 ${Font}"
     echo -e "${GreenBG} 若修改配置, 请注意关闭防火墙相关端口 ${Font}"
     echo -e "${OK} ${GreenBG} 配置 Xray FullCone ${Font}"
-    wait
-    systemctl restart iptables
-    judge "防火墙 重启"
 }
 
 path_set() {
@@ -735,7 +763,6 @@ acme() {
     if "$HOME"/.acme.sh/acme.sh --issue -d "${domain}" --standalone -k ec-256 --force; then
         echo -e "${OK} ${GreenBG} SSL 证书生成成功 ${Font}"
         wait
-        mkdir -p ${ssl_chainpath}
         if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc --force; then
             chmod -f a+rw ${ssl_chainpath}/xray.crt
             chmod -f a+rw ${ssl_chainpath}/xray.key
@@ -1065,7 +1092,7 @@ network_secure() {
         fi
         wait
         judge "Fail2ban 配置"
-        systemctl start fail2ban
+        systemctl restart fail2ban
         wait
         systemctl enable fail2ban
         judge "Fail2ban 启动"

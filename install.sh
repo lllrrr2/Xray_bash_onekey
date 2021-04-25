@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.6"
+shell_version="1.6.4.7"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -365,6 +365,23 @@ nginx_upstream_server_set() {
             read -rp "请输入负载均衡 端口 (port):" upstream_port
             read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight
             sed -i "1a\\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
+            iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT
+            iptables -I OUTPUT -p tcp --sport ${upstream_port} -j ACCEPT
+            iptables -I OUTPUT -p udp --sport ${upstream_port} -j ACCEPT
+            echo -e "${OK} ${GreenBG} 防火墙 追加 完成 ${Font}"
+            if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
+                service iptables save
+                wait
+                service iptables restart
+                echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
+            else
+                netfilter-persistent save
+                wait
+                systemctl restart iptables
+                echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
+            fi
+            wait
             systemctl restart nginx
             judge "追加 Nginx 负载均衡"
             ;;
@@ -458,7 +475,7 @@ xray_privilege_escalation() {
         chown -fR nobody:${cert_group} /var/log/xray/
         chown -R nobody:${cert_group} ${ssl_chainpath}/*
     fi
-    echo -e "${OK} ${GreenBG} Xray 擦屁股完成 ${Font}"
+    echo -e "${OK} ${GreenBG} Xray 擦屁股 完成 ${Font}"
 }
 
 xray_install() {

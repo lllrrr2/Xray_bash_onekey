@@ -178,7 +178,7 @@ dependency_install() {
     judge "安装 python3"
 
     if [[ "${ID}" == "centos" ]]; then
-        [[ -z $(${INS} group list installed | grep -i "Development Tools") ]]${INS} -y groupinstall "Development Tools"
+        [[ -z $(${INS} group list installed | grep -i "Development Tools") ]] && ${INS} -y groupinstall "Development Tools"
     else
         [[ -z $(judge_pkg "build-essential") ]] && ${INS} -y install build-essential
     fi

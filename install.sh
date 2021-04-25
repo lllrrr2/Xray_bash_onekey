@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.10"
+shell_version="1.6.3.11"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -127,20 +127,28 @@ judge() {
     fi
 }
 
+judge_pkg() {
+    if [[ "${ID}" == "centos" ]]; then
+        yum list installed | grep -E "${1//,/\.\*}"
+    else
+        dpkg --get-selections | grep -E "$1"
+    fi
+}
+
 dependency_install() {
-    ${INS} install dbus wget git lsof -y
+    [[ -z $(judge_pkg "dbus,wget,git,lsof") ]] && ${INS} -y install dbus wget git lsof
 
     if [[ "${ID}" == "centos" ]]; then
-        ${INS} -y install iputils
+        [[ -z $(judge_pkg "iputils") ]] && ${INS} -y install iputils
     else
-        ${INS} -y install iputils-ping
+        [[ -z $(judge_pkg "iputils-ping") ]] && ${INS} -y install iputils-ping
     fi
     judge "安装 iputils-ping"
 
     if [[ "${ID}" == "centos" ]]; then
-        ${INS} -y install crontabs
+        [[ -z $(judge_pkg "crontabs") ]] && ${INS} -y install crontabs
     else
-        ${INS} -y install cron
+        [[ -z $(judge_pkg "cron") ]] && ${INS} -y install cron
     fi
     judge "安装 crontab"
 
@@ -154,32 +162,32 @@ dependency_install() {
     fi
     judge "crontab 自启动配置"
 
-    ${INS} -y install bc
+    [[ -z $(judge_pkg "bc") ]] && ${INS} -y install bc
     judge "安装 bc"
 
-    ${INS} -y install unzip
+    [[ -z $(judge_pkg "unzip") ]] && ${INS} -y install unzip
     judge "安装 unzip"
 
-    ${INS} -y install qrencode
+    [[ -z $(judge_pkg "qrencode") ]] && ${INS} -y install qrencode
     judge "安装 qrencode"
 
-    ${INS} -y install curl
+    [[ -z $(judge_pkg "curl") ]] && ${INS} -y install curl
     judge "安装 curl"
 
-    ${INS} -y install python3
+    [[ -z $(judge_pkg "python3") ]] && ${INS} -y install python3
     judge "安装 python3"
 
     if [[ "${ID}" == "centos" ]]; then
-        ${INS} -y groupinstall "Development tools"
+        [[ -z $(${INS} group list installed | grep -i "Development Tools") ]]${INS} -y groupinstall "Development Tools"
     else
-        ${INS} -y install build-essential
+        [[ -z $(judge_pkg "build-essential") ]] && ${INS} -y install build-essential
     fi
     judge "编译工具包 安装"
 
     if [[ "${ID}" == "centos" ]]; then
-        ${INS} -y install pcre pcre-devel zlib-devel epel-release
+        [[ -z $(judge_pkg "pcre,pcre-devel,zlib-devel,epel-release") ]] && ${INS} -y install pcre pcre-devel zlib-devel epel-release
     else
-        ${INS} -y install libpcre3 libpcre3-dev zlib1g-dev dbus
+        [[ -z $(judge_pkg "libpcre3,libpcre3-dev,zlib1g-dev") ]] && ${INS} -y install libpcre3 libpcre3-dev zlib1g-dev
     fi
 }
 
@@ -641,9 +649,9 @@ nginx_update() {
 
 ssl_install() {
     if [[ ${ID} == "centos" ]]; then
-        ${INS} install socat nc -y
+        [[ -z $(judge_pkg "socat,nc") ]] && ${INS} install -y socat nc
     else
-        ${INS} install socat netcat -y
+        [[ -z $(judge_pkg "socat,netcat") ]] && ${INS} install -y socat netcat
     fi
     judge "安装 SSL 证书生成脚本依赖"
 
@@ -1057,7 +1065,7 @@ network_secure() {
     read -rp "请输入: " fail2ban_fq
     [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
     if [[ $fail2ban_fq == 1 ]]; then
-        ${INS} -y install fail2ban
+        [[ -z $(judge_pkg "fail2ban") ]] && ${INS} -y install fail2ban
         judge "Fail2ban 安装"
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local

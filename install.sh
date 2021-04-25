@@ -129,9 +129,9 @@ judge() {
 
 pkg_install_judge() {
     if [[ "${ID}" == "centos" ]]; then
-        echo $(yum list installed | grep -i "$1")
+        yum list installed | grep -i "$1"
     else
-        echo $(dpkg --get-selections | grep -i "$1")
+        dpkg --get-selections | grep -i "$1"
     fi
     wait
 }

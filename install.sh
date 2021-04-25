@@ -131,7 +131,7 @@ judge_pkg() {
     if [[ "${ID}" == "centos" ]]; then
         yum list installed | grep -E "${1//,/\.\*}"
     else
-        dpkg --get-selections | grep -E "$1"
+        dpkg --get-selections | grep -E "${1//,/\.\*}"
     fi
 }
 

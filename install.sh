@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.11"
+shell_version="1.6.4.0"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -127,28 +127,38 @@ judge() {
     fi
 }
 
-judge_pkg() {
+pkg_install() {
     if [[ "${ID}" == "centos" ]]; then
-        yum list installed | grep -E "${1//,/\.\*}"
+        if [[ -z $(yum list installed | grep -E "${1//,/\.\*}") ]]; then
+            ${INS} -y install ${1//,/ }
+            judge "安装 ${1//,/ }"
+        else
+            echo -e "${OK} ${GreenBG} ${1//,/ } 已安装 ${Font}"
+        fi
     else
-        dpkg --get-selections | grep -E "${1//,/\.\*}"
+        if [[ -z $(dpkg --get-selections | grep -E "${1//,/\.\*}") ]]; then
+            ${INS} -y install ${1//,/ }
+            judge "安装 ${1//,/ }"
+        else
+            echo -e "${OK} ${GreenBG} ${1//,/ } 已安装 ${Font}"
+        fi
     fi
 }
 
 dependency_install() {
-    [[ -z $(judge_pkg "dbus,wget,git,lsof") ]] && ${INS} -y install dbus wget git lsof
+    pkg_install "dbus,git,lsof,wget"
 
     if [[ "${ID}" == "centos" ]]; then
-        [[ -z $(judge_pkg "iputils") ]] && ${INS} -y install iputils
+        pkg_install "iputils"
     else
-        [[ -z $(judge_pkg "iputils-ping") ]] && ${INS} -y install iputils-ping
+        pkg_install "iputils-ping"
     fi
     judge "安装 iputils-ping"
 
     if [[ "${ID}" == "centos" ]]; then
-        [[ -z $(judge_pkg "crontabs") ]] && ${INS} -y install crontabs
+        pkg_install "crontabs"
     else
-        [[ -z $(judge_pkg "cron") ]] && ${INS} -y install cron
+        pkg_install "cron"
     fi
     judge "安装 crontab"
 
@@ -162,32 +172,31 @@ dependency_install() {
     fi
     judge "crontab 自启动配置"
 
-    [[ -z $(judge_pkg "bc") ]] && ${INS} -y install bc
-    judge "安装 bc"
+    pkg_install "bc"
 
-    [[ -z $(judge_pkg "unzip") ]] && ${INS} -y install unzip
-    judge "安装 unzip"
+    pkg_install "unzip"
 
-    [[ -z $(judge_pkg "qrencode") ]] && ${INS} -y install qrencode
-    judge "安装 qrencode"
+    pkg_install "qrencode"
 
-    [[ -z $(judge_pkg "curl") ]] && ${INS} -y install curl
-    judge "安装 curl"
+    pkg_install "curl"
 
-    [[ -z $(judge_pkg "python3") ]] && ${INS} -y install python3
-    judge "安装 python3"
+    pkg_install "python3"
 
     if [[ "${ID}" == "centos" ]]; then
-        [[ -z $(${INS} group list installed | grep -i "Development Tools") ]] && ${INS} -y groupinstall "Development Tools"
+        if [[ -z $(${INS} group list installed | grep -i "Development Tools") ]]; then
+            ${INS} -y groupinstall "Development Tools"
+        else
+
+        fi
     else
-        [[ -z $(judge_pkg "build-essential") ]] && ${INS} -y install build-essential
+        pkg_install "build-essential"
     fi
     judge "编译工具包 安装"
 
     if [[ "${ID}" == "centos" ]]; then
-        [[ -z $(judge_pkg "pcre,pcre-devel,zlib-devel,epel-release") ]] && ${INS} -y install pcre pcre-devel zlib-devel epel-release
+        pkg_install "epel-release,pcre,pcre-devel,zlib-devel"
     else
-        [[ -z $(judge_pkg "libpcre3,libpcre3-dev,zlib1g-dev") ]] && ${INS} -y install libpcre3 libpcre3-dev zlib1g-dev
+        epel-release "libpcre3,libpcre3-dev,zlib1g-dev"
     fi
 }
 
@@ -261,23 +270,26 @@ firewall_set() {
     else
         iptables -I INPUT -p tcp --dport ${xport} -j ACCEPT
         iptables -I INPUT -p udp --dport ${xport} -j ACCEPT
-        iptables -I OUTPUTT -p tcp --sport ${xport} -j ACCEPT
+        iptables -I OUTPUT -p tcp --sport ${xport} -j ACCEPT
         iptables -I OUTPUT -p udp --sport ${xport} -j ACCEPT
         iptables -I INPUT -p udp --dport 1024:65535 -j ACCEPT
     fi
     wait
     if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
         service iptables save
+        wait
+        service iptables restart
+        echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
     else
         netfilter-persistent save
+        wait
+        systemctl restart iptables
+        echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
     fi
     wait
     echo -e "${OK} ${GreenBG} 开放防火墙相关端口 ${Font}"
     echo -e "${GreenBG} 若修改配置, 请注意关闭防火墙相关端口 ${Font}"
     echo -e "${OK} ${GreenBG} 配置 Xray FullCone ${Font}"
-    wait
-    systemctl restart iptables
-    judge "防火墙 重启"
 }
 
 path_set() {
@@ -649,9 +661,9 @@ nginx_update() {
 
 ssl_install() {
     if [[ ${ID} == "centos" ]]; then
-        [[ -z $(judge_pkg "socat,nc") ]] && ${INS} install -y socat nc
+        pkg_install "nc,socat"
     else
-        [[ -z $(judge_pkg "socat,netcat") ]] && ${INS} install -y socat netcat
+        pkg_install "netcat,socat"
     fi
     judge "安装 SSL 证书生成脚本依赖"
 
@@ -1065,8 +1077,7 @@ network_secure() {
     read -rp "请输入: " fail2ban_fq
     [[ -z ${fail2ban_fq} ]] && fail2ban_fq=1
     if [[ $fail2ban_fq == 1 ]]; then
-        [[ -z $(judge_pkg "fail2ban") ]] && ${INS} -y install fail2ban
-        judge "Fail2ban 安装"
+        pkg_install "fail2ban"
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
         fi

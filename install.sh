@@ -133,14 +133,14 @@ pkg_install() {
             ${INS} -y install ${1//,/ }
             judge "安装 ${1//,/ }"
         else
-            echo -e "${OK} ${GreenBG} ${1//,/ } 已安装 ${Font}"
+            echo -e "${OK} ${GreenBG} 已安装 ${1//,/ } ${Font}"
         fi
     else
         if [[ -z $(dpkg --get-selections | grep -E "${1//,/\.\*}") ]]; then
             ${INS} -y install ${1//,/ }
             judge "安装 ${1//,/ }"
         else
-            echo -e "${OK} ${GreenBG} ${1//,/ } 已安装 ${Font}"
+            echo -e "${OK} ${GreenBG} 已安装 ${1//,/ } ${Font}"
         fi
     fi
 }
@@ -185,8 +185,9 @@ dependency_install() {
     if [[ "${ID}" == "centos" ]]; then
         if [[ -z $(${INS} group list installed | grep -i "Development Tools") ]]; then
             ${INS} -y groupinstall "Development Tools"
+            judge "安装 Development Tools"
         else
-
+            echo -e "${OK} ${GreenBG} 已安装 Development Tools ${Font}"
         fi
     else
         pkg_install "build-essential"

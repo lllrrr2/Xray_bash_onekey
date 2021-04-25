@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.6"
+shell_version="1.6.3.7"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -240,33 +240,26 @@ inbound_port_set() {
 }
 
 firewall_set() {
-    if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
-        if [[ ${shell_mode} != "wsonly" ]] && [[ "$xtls_add_ws" == "off" ]]; then
-            firewall-cmd --permanent --add-port=80/tcp
-            firewall-cmd --permanent --add-port=443/tcp
-            firewall-cmd --permanent --add-port=1024-65535/udp
-            firewall-cmd --permanent --add-port=${port}/tcp
-            firewall-cmd --permanent --add-port=${port}/udp
-            firewall-cmd --reload
-        else
-            firewall-cmd --permanent --add-port=${xport}/tcp
-            firewall-cmd --permanent --add-port=${xport}/udp
-            firewall-cmd --reload
-        fi
+    iptables -A INPUT -i lo -j ACCEPT
+    iptables -A OUTPUT -o lo -j ACCEPT
+    if [[ ${shell_mode} != "wsonly" ]] && [[ "$xtls_add_ws" == "off" ]]; then
+        iptables -A INPUT -p tcp -m multiport --dport 80,443,${port} -j ACCEPT
+        iptables -A INPUT -p udp --dport ${port} -j ACCEPT
+        iptables -A OUTPUT -p tcp -m multiport --sport 80,443,${port} -j ACCEPT
+        iptables -A OUTPUT -p udp --sport ${port} -j ACCEPT
+        #iptables -A INPUT -p udp --dport 1024:65535 -j ACCEPT
     else
-        if [[ ${shell_mode} != "wsonly" ]]; then
-            ufw allow 80,443/tcp
-            ufw allow 1024:65535/udp
-            ufw allow ${port}
-            ufw reload
-        else
-            ufw allow ${xport}
-            ufw reload
-        fi
+        iptables -A INPUT -p tcp --dport ${xport} -j ACCEPT
+        iptables -A INPUT -p udp --dport ${xport} -j ACCEPT
+        iptables -A OUTPUTT -p tcp --sport ${xport} -j ACCEPT
+        iptables -A OUTPUT -p udp --sport ${xport} -j ACCEPT
     fi
     echo -e "${OK} ${GreenBG} 开放防火墙相关端口 ${Font}"
     echo -e "${GreenBG} 若修改配置, 请注意关闭防火墙相关端口 ${Font}"
     echo -e "${OK} ${GreenBG} 配置 Xray FullCone ${Font}"
+    wait
+    systemctl restart iptables
+    judge "防火墙 重启"
 }
 
 path_set() {
@@ -1044,7 +1037,7 @@ acme_cron_update() {
     judge "cron 计划任务更新"
 }
 
-secure_ssh() {
+network_secure() {
     check_system
     echo -e "${GreenBG} 设置 Fail2ban 用于防止暴力破解, 请选择: ${Font}"
     echo "1. 安装/启动 Fail2ban"
@@ -1059,6 +1052,7 @@ secure_ssh() {
         if [[ ! -f /etc/fail2ban/jail.local ]]; then
             cp -fp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
         fi
+        wait
         if [[ -z $(grep "filter   = sshd" /etc/fail2ban/jail.local) ]]; then
             sed -i "/sshd_log/i \enabled  = true\\nfilter   = sshd\\nmaxretry = 5\\nbantime  = 604800" /etc/fail2ban/jail.local
         fi
@@ -1346,6 +1340,7 @@ tls_type() {
             fi
             echo -e "${OK} ${GreenBG} 已切换至 TLS1.2 and TLS1.3 ${Font}"
         fi
+        wait
         if [[ $shell_mode == "ws"  ]]; then
             systemctl restart nginx
             judge "Nginx 重启"
@@ -1842,7 +1837,7 @@ menu() {
         bbr_boost_sh
         ;;
     18)
-        secure_ssh
+        network_secure
         bash idleleo
         ;;
     19)

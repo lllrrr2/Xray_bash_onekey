@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.5"
+shell_version="1.6.4.6"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -458,7 +458,7 @@ xray_privilege_escalation() {
         chown -fR nobody:${cert_group} /var/log/xray/
         chown -R nobody:${cert_group} ${ssl_chainpath}/*
     fi
-    judge "Xray 擦屁股"
+    echo -e "${OK} ${GreenBG} Xray 擦屁股完成 ${Font}"
 }
 
 xray_install() {

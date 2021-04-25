@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.0"
+shell_version="1.6.4.1"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -129,14 +129,14 @@ judge() {
 
 pkg_install() {
     if [[ "${ID}" == "centos" ]]; then
-        if [[ -z $(yum list installed | grep -E "${1//,/\.\*}") ]]; then
+        if [[ -z $(yum list installed | grep -zoE "${1//,/\.\*}") ]]; then
             ${INS} -y install ${1//,/ }
             judge "安装 ${1//,/ }"
         else
             echo -e "${OK} ${GreenBG} 已安装 ${1//,/ } ${Font}"
         fi
     else
-        if [[ -z $(dpkg --get-selections | grep -E "${1//,/\.\*}") ]]; then
+        if [[ -z $(dpkg --get-selections | grep -zoE "${1//,/\.\*}") ]]; then
             ${INS} -y install ${1//,/ }
             judge "安装 ${1//,/ }"
         else
@@ -153,14 +153,12 @@ dependency_install() {
     else
         pkg_install "iputils-ping"
     fi
-    judge "安装 iputils-ping"
 
     if [[ "${ID}" == "centos" ]]; then
         pkg_install "crontabs"
     else
         pkg_install "cron"
     fi
-    judge "安装 crontab"
 
     if [[ "${ID}" == "centos" ]]; then
         touch /var/spool/cron/root && chmod 600 /var/spool/cron/root

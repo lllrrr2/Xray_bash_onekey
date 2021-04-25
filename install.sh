@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.3"
+shell_version="1.6.4.4"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -83,15 +83,17 @@ check_system() {
     elif [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Debian ${VERSION_ID} ${VERSION} ${Font}"
         INS="apt"
-        $INS update
+        [[ -f $xray_qr_config_file ]] && $INS update
     elif [[ "${ID}" == "ubuntu" && $(echo "${VERSION_ID}" | cut -d '.' -f1) -ge 16 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Ubuntu ${VERSION_ID} ${UBUNTU_CODENAME} ${Font}"
         INS="apt"
-        rm /var/lib/dpkg/lock
-        dpkg --configure -a
-        rm /var/lib/apt/lists/lock
-        rm /var/cache/apt/archives/lock
-        $INS update
+        if [[ -f $xray_qr_config_file ]]; then
+            rm /var/lib/dpkg/lock
+            dpkg --configure -a
+            rm /var/lib/apt/lists/lock
+            rm /var/cache/apt/archives/lock
+            $INS update
+        fi
     else
         echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内, 安装中断! ${Font}"
         exit 1

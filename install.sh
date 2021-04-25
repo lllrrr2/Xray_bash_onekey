@@ -202,17 +202,19 @@ dependency_install() {
 
     pkg_install "python3"
 
-    if [[ "${ID}" == "centos" ]]; then
-        if [[ -z $(${INS} group list installed | grep -i "Development Tools") ]]; then
-            ${INS} -y groupinstall "Development Tools"
-            judge "安装 Development Tools"
+    if [[ ${shell_mode} != "wsonly" ]]; then
+        if [[ "${ID}" == "centos" ]]; then
+            if [[ -z $(${INS} group list installed | grep -i "Development Tools") ]]; then
+                ${INS} -y groupinstall "Development Tools"
+                judge "安装 Development Tools"
+            else
+                echo -e "${OK} ${GreenBG} 已安装 Development Tools ${Font}"
+            fi
         else
-            echo -e "${OK} ${GreenBG} 已安装 Development Tools ${Font}"
+            pkg_install "build-essential"
         fi
-    else
-        pkg_install "build-essential"
+        judge "编译工具包 安装"
     fi
-    judge "编译工具包 安装"
 
     if [[ "${ID}" == "centos" ]]; then
         pkg_install "epel-release,pcre,pcre-devel,zlib-devel"

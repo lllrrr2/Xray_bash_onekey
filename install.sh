@@ -109,7 +109,7 @@ check_system() {
 is_root() {
     if [[ 0 == $UID ]]; then
         echo -e "${OK} ${GreenBG} 当前用户是 root用户, 进入安装流程 ${Font}"
-        sleep 2
+        wait
     else
         echo -e "${Error} ${RedBG} 当前用户不是 root用户, 请切换到 root用户 后重新执行脚本! ${Font}"
         exit 1
@@ -119,7 +119,7 @@ is_root() {
 judge() {
     if [[ 0 -eq $? ]]; then
         echo -e "${OK} ${GreenBG} $1 完成 ${Font}"
-        sleep 1
+        wait
     else
         echo -e "${Error} ${RedBG} $1 失败 ${Font}"
         exit 1
@@ -456,13 +456,15 @@ xray_update() {
     #wget -N --no-check-certificate https://raw.githubusercontent.com/XTLS/Xray-install/main/install-dat-release.sh
     [[ ! -d /usr/local/etc/xray ]] && echo -e "${GreenBG} 若更新无效, 建议直接卸载再安装！ ${Font}"
     systemctl stop xray
-    sleep 1
+    wait
     bash <(curl -L -s https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh)
-    sleep 1
+    wait
     xray_privilege_escalation
     [[ -f ${xray_default_conf} ]] && rm -rf ${xray_default_conf}
     ln -s ${xray_conf} ${xray_default_conf}
+    wait
     systemctl daemon-reload
+    wait
     systemctl start xray
     # 清除临时文件
     ##rm -rf ${idleleo_tmp}/xray
@@ -483,7 +485,7 @@ nginx_exist_check() {
             sed -i "/^include.*\*\.conf;$/d" ${nginx_dir}/conf/nginx.conf
         fi
         echo -e "${OK} ${GreenBG} Nginx 已存在, 跳过编译安装过程 ${Font}"
-        sleep 2
+        wait
     elif [[ -d "/usr/local/nginx/" ]]; then
         echo -e "${Error} ${RedBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装! ${Font}"
         exit 1
@@ -514,7 +516,7 @@ nginx_install() {
     [[ -d ${nginx_dir} ]] && rm -rf ${nginx_dir}
 
     echo -e "${OK} ${GreenBG} 即将开始编译安装 jemalloc ${Font}"
-    sleep 2
+    wait
 
     cd jemalloc-${jemalloc_version} || exit
     ./configure
@@ -525,7 +527,7 @@ nginx_install() {
     ldconfig
 
     echo -e "${OK} ${GreenBG} 即将开始编译安装 Nginx, 过程稍久, 请耐心等待 ${Font}"
-    sleep 4
+    wait
 
     cd ../nginx-${nginx_version} || exit
 
@@ -612,15 +614,15 @@ nginx_update() {
             timeout "删除旧版 Nginx !"
             rm -rf ${nginx_dir}
             rm -rf ${nginx_conf_dir}/*.conf
-            sleep 1
+            wait
             nginx_install
-            sleep 1
+            wait
             if [[ ${shell_mode} == "ws" ]]; then    
                 nginx_conf_add
             elif [[ ${shell_mode} == "xtls" ]]; then
                 nginx_conf_add_xtls
             fi
-            sleep 1
+            wait
             service_start
             sed -i "/\"nginx_version\"/c \  \"nginx_version\": \"${nginx_version}\"," ${xray_qr_config_file}
             sed -i "/\"openssl_version\"/c \  \"openssl_version\": \"${openssl_version}\"," ${xray_qr_config_file}
@@ -667,10 +669,10 @@ domain_check() {
     fi
     echo -e "域名DNS 解析IP: ${domain_ip}"
     echo -e "公网IP: ${local_ip}"
-    sleep 2
+    wait
     if [[ ${local_ip} == ${domain_ip} ]]; then
         echo -e "${OK} ${GreenBG} 域名DNS 解析IP 与 公网IP 匹配 ${Font}"
-        sleep 2
+        wait
     else
         echo -e "${Warning} ${YellowBG} 请确保域名添加了正确的 A/AAAA 记录, 否则将无法正常使用 Xray ${Font}"
         echo -e "${Error} ${RedBG} 域名DNS 解析IP 与 公网IP 不匹配, 请选择: ${Font}" 
@@ -681,7 +683,7 @@ domain_check() {
         case $install in
         1)
             echo -e "${GreenBG} 继续安装 ${Font}"
-            sleep 2
+            wait
             ;;
         2)
             domain_check
@@ -715,14 +717,14 @@ ip_check() {
 port_exist_check() {
     if [[ 0 -eq $(lsof -i:"$1" | grep -i -c "listen") ]]; then
         echo -e "${OK} ${GreenBG} $1 端口未被占用 ${Font}"
-        sleep 1
+        wait
     else
         echo -e "${Error} ${RedBG} 检测到 $1 端口被占用, 以下为 $1 端口占用信息 ${Font}"
         lsof -i:"$1"
         timeout "尝试自动 kill 占用进程!"
         lsof -i:"$1" | awk '{print $2}' | grep -v "PID" | xargs kill -9
         echo -e "${OK} ${GreenBG} kill 完成 ${Font}"
-        sleep 1
+        wait
     fi
 }
 
@@ -730,7 +732,7 @@ acme() {
     if "$HOME"/.acme.sh/acme.sh --issue -d "${domain}" --standalone -k ec-256 --force --test; then
         echo -e "${OK} ${GreenBG} SSL 证书测试签发成功, 开始正式签发 ${Font}"
         rm -rf "$HOME/.acme.sh/${domain}_ecc"
-        sleep 2
+        wait
     else
         echo -e "${Error} ${RedBG} SSL 证书测试签发失败 ${Font}"
         rm -rf "$HOME/.acme.sh/${domain}_ecc"
@@ -739,7 +741,7 @@ acme() {
 
     if "$HOME"/.acme.sh/acme.sh --issue -d "${domain}" --standalone -k ec-256 --force; then
         echo -e "${OK} ${GreenBG} SSL 证书生成成功 ${Font}"
-        sleep 2
+        wait
         mkdir -p ${ssl_chainpath}
         if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc --force; then
             chmod -f a+rw ${ssl_chainpath}/xray.crt
@@ -747,7 +749,7 @@ acme() {
             [[ $(grep "nogroup" /etc/group) ]] && cert_group="nogroup"
             chown -R nobody:${cert_group} ${ssl_chainpath}/*
             echo -e "${OK} ${GreenBG} 证书配置成功 ${Font}"
-            sleep 2
+            wait
         fi
     else
         echo -e "${Error} ${RedBG} SSL 证书生成失败 ${Font}"
@@ -999,11 +1001,10 @@ stop_service_all() {
 
 service_restart(){
     systemctl daemon-reload
-    sleep 1
+    wait
     if [[ ${shell_mode} != "wsonly" ]]; then
         systemctl restart nginx
         judge "Nginx 重启"
-        sleep 1
     fi
     systemctl restart xray
     judge "Xray 重启"
@@ -1013,7 +1014,6 @@ service_start(){
     if [[ ${shell_mode} != "wsonly" ]]; then
         systemctl start nginx
         judge "Nginx 启动"
-        sleep 1
     fi
     systemctl start xray
     judge "Xray 启动" 
@@ -1023,7 +1023,6 @@ service_stop(){
     if [[ ${shell_mode} != "wsonly" ]]; then
         systemctl stop nginx
         judge "Nginx 停止"
-        sleep 1
     fi
     systemctl stop xray
     judge "Xray 停止"  
@@ -1073,9 +1072,8 @@ secure_ssh() {
         wait
         judge "Fail2ban 配置"
         systemctl start fail2ban
-        sleep 1
+        wait
         systemctl enable fail2ban
-        sleep 1
         judge "Fail2ban 启动"
         timeout "清空屏幕!"
         clear
@@ -1083,7 +1081,7 @@ secure_ssh() {
     if [[ $fail2ban_fq == 2 ]]; then
         [[ -f /etc/fail2ban/jail.local ]] && rm -rf /etc/fail2ban/jail.local
         systemctl stop fail2ban
-        sleep 1
+        wait
         systemctl disable fail2ban
         judge "Fail2ban 停止"
         timeout "清空屏幕!"
@@ -1091,9 +1089,8 @@ secure_ssh() {
     fi
     if [[ $fail2ban_fq == 3 ]]; then
         systemctl daemon-reload
-        sleep 1
+        wait
         systemctl restart fail2ban
-        sleep 1
         judge "Fail2ban 重启"
         timeout "清空屏幕!"
         clear

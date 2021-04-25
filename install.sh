@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.4"
+shell_version="1.6.4.5"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -83,11 +83,11 @@ check_system() {
     elif [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Debian ${VERSION_ID} ${VERSION} ${Font}"
         INS="apt"
-        [[ -f $xray_qr_config_file ]] && $INS update
+        [[ ! -f $xray_qr_config_file ]] && $INS update
     elif [[ "${ID}" == "ubuntu" && $(echo "${VERSION_ID}" | cut -d '.' -f1) -ge 16 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Ubuntu ${VERSION_ID} ${UBUNTU_CODENAME} ${Font}"
         INS="apt"
-        if [[ -f $xray_qr_config_file ]]; then
+        if [[ ! -f $xray_qr_config_file ]]; then
             rm /var/lib/dpkg/lock
             dpkg --configure -a
             rm /var/lib/apt/lists/lock
@@ -131,9 +131,9 @@ judge() {
 
 pkg_install_judge() {
     if [[ "${ID}" == "centos" ]]; then
-        yum list installed | grep -i "$1"
+        yum list installed | grep -iw "^$1"
     else
-        dpkg --get-selections | grep -i "$1"
+        dpkg --get-selections | grep -iw "^$1"
     fi
     wait
 }
@@ -157,7 +157,7 @@ pkg_install() {
             sleep 1
         fi
     else
-        if [[ -z $(pkg_install_judge | grep "$1") ]]; then
+        if [[ -z $(pkg_install_judge "$1") ]]; then
             ${INS} -y install $1
             judge "安装 $1"
         else

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.1"
+shell_version="1.6.4.2"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -195,7 +195,7 @@ dependency_install() {
     if [[ "${ID}" == "centos" ]]; then
         pkg_install "epel-release,pcre,pcre-devel,zlib-devel"
     else
-        epel-release "libpcre3,libpcre3-dev,zlib1g-dev"
+        pkg_install "libpcre3,libpcre3-dev,zlib1g-dev"
     fi
 }
 

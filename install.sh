@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.7"
+shell_version="1.6.4.8"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -285,16 +285,17 @@ firewall_set() {
     iptables -A INPUT -i lo -j ACCEPT
     iptables -A OUTPUT -o lo -j ACCEPT
     if [[ ${shell_mode} != "wsonly" ]] && [[ "$xtls_add_ws" == "off" ]]; then
-        iptables -I INPUT -p tcp -m multiport --dport 80,443,${port} -j ACCEPT
-        iptables -I INPUT -p udp --dport ${port} -j ACCEPT
-        iptables -I OUTPUT -p tcp -m multiport --sport 80,443,${port} -j ACCEPT
-        iptables -I OUTPUT -p udp --sport ${port} -j ACCEPT
+        iptables -I INPUT -p tcp -m multiport --dport 53,80,443,${port} -j ACCEPT
+        iptables -I INPUT -p udp -m multiport --dport 53,80,443,${port} -j ACCEPT
+        iptables -I OUTPUT -p tcp -m multiport --sport 53,80,443,${port} -j ACCEPT
+        iptables -I OUTPUT -p udp -m multiport --sport 53,80,443,${port} -j ACCEPT
         iptables -I INPUT -p udp --dport 1024:65535 -j ACCEPT
     else
-        iptables -I INPUT -p tcp --dport ${xport} -j ACCEPT
-        iptables -I INPUT -p udp --dport ${xport} -j ACCEPT
-        iptables -I OUTPUT -p tcp --sport ${xport} -j ACCEPT
-        iptables -I OUTPUT -p udp --sport ${xport} -j ACCEPT
+        
+        iptables -I INPUT -p tcp -m multiport --dport 53,${xport} -j ACCEPT
+        iptables -I INPUT -p udp -m multiport --dport 53,${xport} -j ACCEPT
+        iptables -I OUTPUT -p tcp -m multiport --sport 53,${xport} -j ACCEPT
+        iptables -I OUTPUT -p udp -m multiport --sport 53,${xport} -j ACCEPT
         iptables -I INPUT -p udp --dport 1024:65535 -j ACCEPT
     fi
     wait

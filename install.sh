@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.7"
+shell_version="1.6.3.9"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -119,6 +119,7 @@ is_root() {
 judge() {
     if [[ 0 -eq $? ]]; then
         echo -e "${OK} ${GreenBG} $1 完成 ${Font}"
+        sleep 1
         wait
     else
         echo -e "${Error} ${RedBG} $1 失败 ${Font}"
@@ -201,6 +202,7 @@ create_directory() {
     if [[ ${shell_mode} != "wsonly" ]]; then
         [[ ! -d "${nginx_conf_dir}" ]] && mkdir -p ${nginx_conf_dir}
     fi
+    [[ ! -d "${ssl_chainpath}" ]] && mkdir -p ${ssl_chainpath}
     [[ ! -d "${xray_conf_dir}" ]] && mkdir -p ${xray_conf_dir}
     [[ ! -d "${idleleo_dir}/info" ]] && mkdir -p ${idleleo_dir}/info
     [[ ! -d "${idleleo_tmp}" ]] && mkdir -p ${idleleo_tmp}
@@ -243,17 +245,25 @@ firewall_set() {
     iptables -A INPUT -i lo -j ACCEPT
     iptables -A OUTPUT -o lo -j ACCEPT
     if [[ ${shell_mode} != "wsonly" ]] && [[ "$xtls_add_ws" == "off" ]]; then
-        iptables -A INPUT -p tcp -m multiport --dport 80,443,${port} -j ACCEPT
-        iptables -A INPUT -p udp --dport ${port} -j ACCEPT
-        iptables -A OUTPUT -p tcp -m multiport --sport 80,443,${port} -j ACCEPT
-        iptables -A OUTPUT -p udp --sport ${port} -j ACCEPT
-        #iptables -A INPUT -p udp --dport 1024:65535 -j ACCEPT
+        iptables -I INPUT -p tcp -m multiport --dport 80,443,${port} -j ACCEPT
+        iptables -I INPUT -p udp --dport ${port} -j ACCEPT
+        iptables -I OUTPUT -p tcp -m multiport --sport 80,443,${port} -j ACCEPT
+        iptables -I OUTPUT -p udp --sport ${port} -j ACCEPT
+        iptables -I INPUT -p udp --dport 1024:65535 -j ACCEPT
     else
-        iptables -A INPUT -p tcp --dport ${xport} -j ACCEPT
-        iptables -A INPUT -p udp --dport ${xport} -j ACCEPT
-        iptables -A OUTPUTT -p tcp --sport ${xport} -j ACCEPT
-        iptables -A OUTPUT -p udp --sport ${xport} -j ACCEPT
+        iptables -I INPUT -p tcp --dport ${xport} -j ACCEPT
+        iptables -I INPUT -p udp --dport ${xport} -j ACCEPT
+        iptables -I OUTPUTT -p tcp --sport ${xport} -j ACCEPT
+        iptables -I OUTPUT -p udp --sport ${xport} -j ACCEPT
+        iptables -I INPUT -p udp --dport 1024:65535 -j ACCEPT
     fi
+    wait
+    if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
+        service iptables save
+    else
+        netfilter-persistent save
+    fi
+    wait
     echo -e "${OK} ${GreenBG} 开放防火墙相关端口 ${Font}"
     echo -e "${GreenBG} 若修改配置, 请注意关闭防火墙相关端口 ${Font}"
     echo -e "${OK} ${GreenBG} 配置 Xray FullCone ${Font}"

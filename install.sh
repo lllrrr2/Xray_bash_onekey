@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.3.9"
+shell_version="1.6.3.10"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -1037,11 +1037,11 @@ acme_cron_update() {
         if [[ "${ID}" == "centos" ]]; then
             #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
             #        &> /dev/null" /var/spool/cron/root
-            sed -i "/acme.sh/c 0 3 * * 0 bash ${ssl_update_file}" /var/spool/cron/root
+            sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/root
         else
             #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
             #        &> /dev/null" /var/spool/cron/crontabs/root
-            sed -i "/acme.sh/c 0 3 * * 0 bash ${ssl_update_file}" /var/spool/cron/crontabs/root
+            sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/crontabs/root
         fi
     fi
     judge "cron 计划任务更新"

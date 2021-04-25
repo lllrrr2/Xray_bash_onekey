@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.2"
+shell_version="1.6.4.3"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -127,20 +127,40 @@ judge() {
     fi
 }
 
-pkg_install() {
+pkg_install_judge() {
     if [[ "${ID}" == "centos" ]]; then
-        if [[ -z $(yum list installed | grep -zoE "${1//,/\.\*}") ]]; then
-            ${INS} -y install ${1//,/ }
+        echo $(yum list installed | grep -i "$1")
+    else
+        echo $(dpkg --get-selections | grep -i "$1")
+    fi
+    wait
+}
+
+pkg_install() {
+    install_array=(${1//,/ })
+    install_status=1
+    if [[ ${#install_array[@]} -gt 1 ]]; then
+        for install_var in ${install_array[@]}
+        do
+            if [[ -z $(pkg_install_judge "${install_var}") ]]; then
+                ${INS} -y install ${install_var}
+                install_status=0
+            fi
+        done
+        wait
+        if [[ ${install_status} == 0 ]]; then
             judge "安装 ${1//,/ }"
         else
             echo -e "${OK} ${GreenBG} 已安装 ${1//,/ } ${Font}"
+            sleep 1
         fi
     else
-        if [[ -z $(dpkg --get-selections | grep -zoE "${1//,/\.\*}") ]]; then
-            ${INS} -y install ${1//,/ }
-            judge "安装 ${1//,/ }"
+        if [[ -z $(pkg_install_judge | grep "$1") ]]; then
+            ${INS} -y install $1
+            judge "安装 $1"
         else
-            echo -e "${OK} ${GreenBG} 已安装 ${1//,/ } ${Font}"
+            echo -e "${OK} ${GreenBG} 已安装 $1 ${Font}"
+            sleep 1
         fi
     fi
 }

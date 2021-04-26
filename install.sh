@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.6.4.8"
+shell_version="1.6.4.9"
 shell_mode="None"
 shell_mode_show="未安装"
 version_cmp="/tmp/version_cmp.tmp"
@@ -429,7 +429,7 @@ modify_inbound_port() {
 
 modify_nginx_port() {
     sed -i "/ssl http2;$/c \\\t\\tlisten ${port} ssl http2;" ${nginx_conf}
-    sed -i "5c \\\t\\tlisten [::]:${port} ssl http2;" ${nginx_conf}
+    sed -i "6c \\\t\\tlisten [::]:${port} ssl http2;" ${nginx_conf}
     judge "Xray port 修改"
     [ -f ${xray_qr_config_file} ] && sed -i "/\"port\"/c \\  \"port\": \"${port}\"," ${xray_qr_config_file}
     echo -e "${OK} ${GreenBG} 端口号: ${port} ${Font}"
@@ -445,7 +445,7 @@ modify_nginx_other() {
     sed -i "/return/c \\\t\\treturn 301 https://${domain}\$request_uri;" ${nginx_conf}
     sed -i "/returc/c \\\t\\t\\treturn 302 https://www.idleleo.com/helloworld;" ${nginx_conf}
     sed -i "/locatioc/c \\\t\\tlocation \/" ${nginx_conf}
-    sed -i "/error_page   500 502 503 504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
+    sed -i "/error_page.*504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
 }
 
 modify_path() {
@@ -538,8 +538,10 @@ nginx_exist_check() {
     if [[ -f "/etc/nginx/sbin/nginx" ]]; then
         if [[ -d ${nginx_conf_dir} ]]; then
             rm -rf ${nginx_conf_dir}/*.conf
-            if [[ -f  ${nginx_conf_dir}/original.confbackup ]]; then 
-                cp -fp ${nginx_conf_dir}/original.confbackup ${nginx_dir}/conf/nginx.conf
+            if [[ -f  ${nginx_conf_dir}/nginx.default ]]; then 
+                cp -fp ${nginx_conf_dir}/nginx.default ${nginx_dir}/conf/nginx.conf
+            elif [[ -f  ${nginx_dir}/conf/nginx.conf.default ]]; then
+                cp -fp ${nginx_dir}/conf/nginx.conf.default ${nginx_dir}/conf/nginx.conf
             else
                 sed -i "/if \(.*\) {$/,+2d" ${nginx_dir}/conf/nginx.conf
                 sed -i "/^include.*\*\.conf;$/d" ${nginx_dir}/conf/nginx.conf
@@ -618,11 +620,12 @@ nginx_install() {
     make -j ${THREAD} && make install
     judge "Nginx 编译安装"
 
+    cp -fp ${nginx_dir}/conf/nginx.conf ${nginx_conf_dir}/nginx.default
+    
     # 修改基本配置
     sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/conf/nginx.conf
     sed -i 's/worker_processes  1;/worker_processes  4;/' ${nginx_dir}/conf/nginx.conf
     sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_dir}/conf/nginx.conf
-    cp -fp ${nginx_dir}/conf/nginx.conf ${nginx_conf_dir}/original.confbackup
 
     # 删除临时文件
     rm -rf ../nginx-${nginx_version}
@@ -942,8 +945,8 @@ old_config_input () {
 }
 
 nginx_conf_add() {
-    touch ${nginx_conf_dir}/xray.conf
-    cat >${nginx_conf_dir}/xray.conf <<EOF
+    touch ${nginx_conf}
+    cat >${nginx_conf} <<EOF
     server_tokens off;
     types_hash_max_size 2048;
 
@@ -997,8 +1000,8 @@ nginx_conf_add() {
     }
 EOF
 
-    touch ${nginx_conf_dir}/xray-server.conf
-    cat >${nginx_conf_dir}/xray-server.conf <<EOF
+    touch ${nginx_upstream_conf}
+    cat >${nginx_upstream_conf} <<EOF
     upstream xray-server { 
         xray-serverc
     }
@@ -1010,8 +1013,8 @@ EOF
 }
 
 nginx_conf_add_xtls() {
-    touch ${nginx_conf_dir}/xray.conf
-    cat >${nginx_conf_dir}/xray.conf <<EOF
+    touch ${nginx_conf}
+    cat >${nginx_conf} <<EOF
     server_tokens off;
     server {
         listen 127.0.0.1:8080 proxy_protocol;
@@ -1128,7 +1131,7 @@ network_secure() {
         fi
         if [[ ${shell_mode} != "wsonly" ]] && [[ -z $(grep "filter   = nginx-botsearch" /etc/fail2ban/jail.local) ]]; then
             sed -i "/nginx_error_log/d" /etc/fail2ban/jail.local
-            sed -i "/http,https$/c \\port     = http,https,8080" /etc/fail2ban/jail.local
+            sed -i "s/http,https$/http,https,8080/g" /etc/fail2ban/jail.local
             sed -i "/^maxretry.*= 2$/c \\maxretry = 5" /etc/fail2ban/jail.local
             sed -i "/nginx-botsearch/i \[nginx-badbots]\\n\\nenabled  = true\\nport     = http,https,8080\\nfilter   = apache-badbots\\nlogpath  = /etc/nginx/logs/access.log\\nbantime  = 604800\\nmaxretry = 5\\n" /etc/fail2ban/jail.local
             sed -i "/nginx-botsearch/a \\\nenabled  = true\\nfilter   = nginx-botsearch\\nlogpath  = /etc/nginx/logs/access.log\\n           /etc/nginx/logs/error.log\\nbantime  = 604800" /etc/fail2ban/jail.local

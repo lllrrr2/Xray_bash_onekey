@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.4"
+shell_version="1.7.0.5"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1455,12 +1455,21 @@ vless_qr_link_image() {
                 echo -n "${vless_link}" | qrencode -o - -t utf8
                 echo -e "\n"
             else    
-                if [[ ${ws_grpc_mode} == "onlyws" ]] || [[ ${ws_grpc_mode} == "all" ]]; then
+                if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                     echo -e "${Red} ws URL 分享链接:${Font} ${vless_ws_link}"
                     echo -e "$Red 二维码: $Font"
                     echo -n "${vless_ws_link}" | qrencode -o - -t utf8
                     echo -e "\n"
-                elif [[ ${ws_grpc_mode} == "onlygRPC" ]] || [[ ${ws_grpc_mode} == "all" ]]; then
+                elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
+                    echo -e "${Red} gRPC URL 分享链接:${Font} ${vless_grpc_link}"
+                    echo -e "$Red 二维码: $Font"
+                    echo -n "${vless_grpc_link}" | qrencode -o - -t utf8
+                    echo -e "\n"
+                elif  [[ ${ws_grpc_mode} == "all" ]]; then
+                    echo -e "${Red} ws URL 分享链接:${Font} ${vless_ws_link}"
+                    echo -e "$Red 二维码: $Font"
+                    echo -n "${vless_ws_link}" | qrencode -o - -t utf8
+                    echo -e "\n"
                     echo -e "${Red} gRPC URL 分享链接:${Font} ${vless_grpc_link}"
                     echo -e "$Red 二维码: $Font"
                     echo -n "${vless_grpc_link}" | qrencode -o - -t utf8

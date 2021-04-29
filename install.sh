@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.5"
+shell_version="1.7.0.6"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -69,7 +69,7 @@ jemalloc_version="5.2.1"
 read_config_status=1
 xtls_add_more="off"
 old_config_status="off"
-old_shell_mode="None"
+old_tls_mode="NULL"
 random_num=$((RANDOM % 12 + 4))
 THREAD=$(($(grep 'processor' /proc/cpuinfo | sort -u | wc -l) + 1))
 
@@ -995,7 +995,7 @@ xray_xtls_add_more() {
 
 old_config_exist_check() {
     if [[ -f $xray_qr_config_file ]]; then
-        if [[ ${old_shell_mode} == ${shell_mode} ]]; then
+        if [[ ${old_tls_mode} == ${tls_mode} ]]; then
             echo -e "${GreenBG} 检测到旧配置文件, 是否读取旧文件配置 [Y/N]? ${Font}"
             read -r old_config_fq
             case $old_config_fq in
@@ -1877,7 +1877,7 @@ judge_mode() {
             [[ ${ws_grpc_mode} == "onlygRPC" ]] && shell_mode="gRPC ONLY"
             [[ ${ws_grpc_mode} == "all" ]] && shell_mode="ws+gRPC ONLY"
         fi
-        old_shell_mode=${shell_mode}
+        old_tls_mode=${tls_mode}
     fi
 }
 

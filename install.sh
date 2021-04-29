@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.10"
+shell_version="1.7.0.11"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1889,9 +1889,9 @@ install_xray_ws_tls() {
     basic_optimization
     create_directory
     domain_check
+    ws_grpc_choose
     old_config_exist_check
     port_set
-    ws_grpc_choose
     ws_inbound_port_set
     grpc_inbound_port_set
     firewall_set
@@ -1955,8 +1955,8 @@ install_xray_ws_only() {
     basic_optimization
     create_directory
     ip_check
-    old_config_exist_check
     ws_grpc_choose
+    old_config_exist_check
     ws_inbound_port_set
     grpc_inbound_port_set
     firewall_set

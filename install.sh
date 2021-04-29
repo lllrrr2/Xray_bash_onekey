@@ -1660,14 +1660,14 @@ tls_type() {
         [[ -z ${tls_version} ]] && tls_version=2
         if [[ $tls_version == 3 ]]; then
             if [[ ${tls_mode} == "TLS" ]]; then
-                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols\\t\\tTLSv1.3;/" $nginx_conf
+                sed -i "s/^\( *\)ssl_protocols\( *\).*/\1ssl_protocols\2TLSv1.3;/" $nginx_conf
             else
                 sed -i "s/^\( *\)\"minVersion\".*/\1\"minVersion\": \"1.3\",/" ${xray_conf}
             fi
             echo -e "${OK} ${GreenBG} 已切换至 TLS1.3 only ${Font}"
         elif [[ $tls_version == 1 ]]; then
             if [[ ${tls_mode} == "TLS" ]]; then
-                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols\\t\\tTLSv1.1 TLSv1.2 TLSv1.3;/" $nginx_conf
+                sed -i "s/^\( *\)ssl_protocols\( *\).*/\1ssl_protocols\2TLSv1.1 TLSv1.2 TLSv1.3;/" $nginx_conf
                 echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
             else
                 echo -e "${Error} ${RedBG} XTLS最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
@@ -1675,7 +1675,7 @@ tls_type() {
             fi
         else
             if [[ ${tls_mode} == "TLS" ]]; then
-                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols\\t\\tTLSv1.2 TLSv1.3;/" $nginx_conf
+                sed -i "s/^\( *\)ssl_protocols\( *\).*/\1ssl_protocols\2TLSv1.2 TLSv1.3;/" $nginx_conf
             else
                 sed -i "s/^\( *\)\"minVersion\".*/\1\"minVersion\": \"1.2\",/" ${xray_conf}
             fi

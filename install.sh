@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.3"
+shell_version="1.7.0.4"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -448,9 +448,9 @@ nginx_upstream_server_set() {
             read -rp "请输入负载均衡 端口 (port):" upstream_port
             read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight
             if [[ ${upstream_net} == 1 ]]; then
-                sed -i "/xray-ws-server/a \\\t\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+                sed -i "/xray-ws-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             elif [[ ${upstream_net} == 2 ]]; then
-                sed -i "/xray-grpc-server/a \\\t\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+                sed -i "/xray-grpc-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             fi
             iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
             iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT
@@ -524,15 +524,15 @@ modify_nginx_other() {
         sed -i "s/^\( *\)location ws$/\1location \/${camouflage}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
         if [[ ${shell_mode} == "Nginx+ws+TLS" ]]; then
-            sed -i "/#xray-ws-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         elif [[ ${shell_mode} == "Nginx+gRPC+TLS" ]]; then
-            sed -i "/#xray-grpc-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         elif [[ ${shell_mode} == "Nginx+ws+gRPC+TLS" ]]; then
-            sed -i "/#xray-ws-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
-            sed -i "/#xray-grpc-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         fi
     fi
-    sed -i "s/^\( *\)return$/\1return 301 https:\/\/${domain}\$request_uri;/" ${nginx_conf}
+    sed -i "s/^\( *\)return 301.*/\1return 301 https:\/\/${domain}\$request_uri;/" ${nginx_conf}
     #sed -i "s/^\( *\)returc$/\1return 302 https:\/\/www.idleleo.com\/helloworld;/" ${nginx_conf}
     #sed -i "s/^\( *\)locatioc$/\1location \//" ${nginx_conf}
     sed -i "/error_page.*504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf

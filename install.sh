@@ -1500,6 +1500,7 @@ info_extraction() {
 
 basic_information() {
     {
+        echo -e "\n"
         if [[ ${shell_mode} == "Nginx+ws+TLS" ]]; then
             echo -e "${OK} ${GreenBG} Xray+Nginx+ws+TLS 安装成功 ${Font}"
         elif  [[ ${shell_mode} == "Nginx+gRPC+TLS" ]]; then
@@ -1521,7 +1522,7 @@ basic_information() {
         elif  [[ ${shell_mode} == "ws+gRPC ONLY" ]]; then
             echo -e "${OK} ${GreenBG} ws+gRPC ONLY 安装成功 ${Font}"
         fi
-        echo -e "${Warning} ${YellowBG} VLESS 目前分享链接规范为实验阶段, 请自行判断是否适用 ${Font}"
+        echo -e "\n${Warning} ${YellowBG} VLESS 目前分享链接规范为实验阶段, 请自行判断是否适用 ${Font}"
         echo -e "\n${Red} —————————————— Xray 配置信息 —————————————— ${Font}"
         echo -e "${Red} 主机 (host):${Font} $(info_extraction '\"host\"') "
         if [[ ${tls_mode} == "None" ]]; then

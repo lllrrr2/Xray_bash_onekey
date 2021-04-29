@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.0"
+shell_version="1.7.0.1"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -375,16 +375,15 @@ ws_path_set() {
             case $path_modify_fq in
             [yY][eE][sS] | [yY])
                 read -rp "请输入自定义 ws 伪装路径 (不需要“/”):" camouflage
-                camouflage="/${camouflage}"
                 echo -e "${OK} ${GreenBG} ws 伪装路径: ${camouflage} ${Font}"
                 ;;
             *)
-                camouflage="/$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+                camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
                 echo -e "${OK} ${GreenBG} ws 伪装路径: ${camouflage} ${Font}"
                 ;;
             esac
         else
-            camouflage="/$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+            camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
         fi
     fi
 }
@@ -449,9 +448,9 @@ nginx_upstream_server_set() {
             read -rp "请输入负载均衡 端口 (port):" upstream_port
             read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight
             if [[ ${upstream_net} == 1 ]]; then
-                sed -i "/xray-ws-server/a \\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+                sed -i "/xray-ws-server/a \\\t\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             elif [[ ${upstream_net} == 2 ]]; then
-                sed -i "/xray-grpc-server/a \\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+                sed -i "/xray-grpc-server/a \\\t\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             fi
             iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
             iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT
@@ -490,7 +489,7 @@ modify_alterid() {
 }
 
 modify_listen_address() {
-    sed -i "s/^\( *\)\"listen\".*/g\1\"listen\": \"0.0.0.0\",/" ${xray_conf}
+    sed -i "s/^\( *\)\"listen\".*/\1\"listen\": \"0.0.0.0\",/g" ${xray_conf}
 }
 
 modify_inbound_port() {
@@ -512,7 +511,7 @@ modify_inbound_port() {
 
 modify_nginx_port() {
     sed -i "s/^\( *\).*ssl http2;$/\1listen ${port} ssl http2;/" ${nginx_conf}
-    sed -i "6s/^\( *\)listen [::]:.*/\1listen [::]:${port} ssl http2;/" ${nginx_conf}
+    sed -i "6s/^\( *\).*ssl http2;$/\1listen [::]:${port} ssl http2;/" ${nginx_conf}
     judge "Xray port 修改"
     [[ -f ${xray_qr_config_file} ]] && sed -i "s/^\( *\)\"port\".*/\1\"port\": \"${port}\",/" ${xray_qr_config_file}
     echo -e "${OK} ${GreenBG} 端口号: ${port} ${Font}"
@@ -522,15 +521,15 @@ modify_nginx_other() {
     sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
     sed -i "s/^\( *\)server_name.*/\1server_name ${domain};/" ${nginx_conf}
     if [[ ${tls_mode} != "XTLS" ]]; then
-        sed -i "s/^\( *\)location ws$/\1location ${camouflage}/" ${nginx_conf}
+        sed -i "s/^\( *\)location ws$/\1location \/${camouflage}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
         if [[ ${shell_mode} == "Nginx+ws+TLS" ]]; then
-            sed -i "/#xray-ws-serverc/c \\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-ws-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         elif [[ ${shell_mode} == "Nginx+gRPC+TLS" ]]; then
-            sed -i "/#xray-grpc-serverc/c \\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-grpc-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         elif [[ ${shell_mode} == "Nginx+ws+gRPC+TLS" ]]; then
-            sed -i "/#xray-ws-serverc/c \\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
-            sed -i "/#xray-grpc-serverc/c \\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-ws-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "/#xray-grpc-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         fi
     fi
     sed -i "s/^\( *\)return$/\1return 301 https://${domain}\$request_uri;/" ${nginx_conf}
@@ -540,7 +539,7 @@ modify_nginx_other() {
 }
 
 modify_path() {
-    sed -i "s/^\( *\)\"path\".*/\1\"path\": \"${camouflage}\"/" ${xray_conf}
+    sed -i "s/^\( *\)\"path\".*/\1\"path\": \"\/${camouflage}\"/" ${xray_conf}
     sed -i "s/^\( *\)\"serviceName\".*/\1\"serviceName\": \"${servicename}\"/" ${xray_conf}
     if [[ ${tls_mode} != "XTLS" ]] || [[ "$xtls_add_more" == "off" ]]; then
         judge "Xray 伪装路径 修改"
@@ -550,7 +549,7 @@ modify_path() {
 }
 
 modify_UUID() {
-    sed -i "s/^\( *\)\"id\".*/g\1\"id\": \"${UUID}\",/" ${xray_conf}
+    sed -i "s/^\( *\)\"id\".*/\1\"id\": \"${UUID}\",/g" ${xray_conf}
     judge "Xray UUID 修改"
     [[ -f ${xray_qr_config_file} ]] && sed -i "s/^\( *\)\"id\".*/\1\"id\": \"${UUID}\",/" ${xray_qr_config_file}
     [[ -f ${xray_qr_config_file} ]] && sed -i "s/^\( *\)\"idc\".*/\1\"idc\": \"${UUID5_char}\",/" ${xray_qr_config_file}
@@ -1661,14 +1660,14 @@ tls_type() {
         [[ -z ${tls_version} ]] && tls_version=2
         if [[ $tls_version == 3 ]]; then
             if [[ ${tls_mode} == "TLS" ]]; then
-                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols TLSv1.3;/" $nginx_conf
+                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols\\t\\tTLSv1.3;/" $nginx_conf
             else
                 sed -i "s/^\( *\)\"minVersion\".*/\1\"minVersion\": \"1.3\",/" ${xray_conf}
             fi
             echo -e "${OK} ${GreenBG} 已切换至 TLS1.3 only ${Font}"
         elif [[ $tls_version == 1 ]]; then
             if [[ ${tls_mode} == "TLS" ]]; then
-                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;/" $nginx_conf
+                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols\\t\\tTLSv1.1 TLSv1.2 TLSv1.3;/" $nginx_conf
                 echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
             else
                 echo -e "${Error} ${RedBG} XTLS最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
@@ -1676,7 +1675,7 @@ tls_type() {
             fi
         else
             if [[ ${tls_mode} == "TLS" ]]; then
-                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols TLSv1.2 TLSv1.3;/" $nginx_conf
+                sed -i "s/^\( *\)ssl_protocols.*/\1ssl_protocols\\t\\tTLSv1.2 TLSv1.3;/" $nginx_conf
             else
                 sed -i "s/^\( *\)\"minVersion\".*/\1\"minVersion\": \"1.2\",/" ${xray_conf}
             fi

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.7"
+shell_version="1.7.0.8"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -527,10 +527,12 @@ modify_nginx_other() {
         sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         if [[ ${shell_mode} == "Nginx+ws+TLS" ]]; then
             sed -i "s/^\( *\)#proxy_pass\(.*\)/\1proxy_pass\2/" ${nginx_conf}
+            sed -i "s/^\( *\)#proxy_redirect default;/\1proxy_redirect default;/" ${nginx_conf}
         elif [[ ${shell_mode} == "Nginx+gRPC+TLS" ]]; then
             sed -i "s/^\( *\)#grpc_pass\(.*\)/\1grpc_pass\2/" ${nginx_conf}
         elif [[ ${shell_mode} == "Nginx+ws+gRPC+TLS" ]]; then
             sed -i "s/^\( *\)#proxy_pass\(.*\)/\1proxy_pass\2/" ${nginx_conf}
+            sed -i "s/^\( *\)#proxy_redirect default;/\1proxy_redirect default;/" ${nginx_conf}
             sed -i "s/^\( *\)#grpc_pass\(.*\)/\1grpc_pass\2/" ${nginx_conf}
         fi
     fi
@@ -999,14 +1001,14 @@ old_config_exist_check() {
             echo -e "${GreenBG} 检测到旧配置文件, 是否读取旧文件配置 [Y/N]? ${Font}"
             read -r old_config_fq
             case $old_config_fq in
-            [yY][eE][sS] | [yY])
+            [nN][oO]|[nN])
+                rm -rf $xray_qr_config_file
+                echo -e "${OK} ${GreenBG} 已删除旧配置 ${Font}"
+                ;;
+            *)
                 echo -e "${OK} ${GreenBG} 已保留旧配置 ${Font}"
                 old_config_status="on"
                 old_config_input
-                ;;
-            *)
-                rm -rf $xray_qr_config_file
-                echo -e "${OK} ${GreenBG} 已删除旧配置 ${Font}"
                 ;;
             esac
         else
@@ -1144,7 +1146,7 @@ nginx_conf_add() {
         location ws
         {
             #proxy_pass http://xray-ws-server;
-            proxy_redirect default;
+            #proxy_redirect default;
             proxy_http_version 1.1;
             proxy_connect_timeout 180s;
             proxy_send_timeout 180s;

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.12"
+shell_version="1.7.0.13"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1857,7 +1857,7 @@ timeout() {
 }
 
 judge_mode() {
-    if [[ -f ${xray_bin_dir} ]]; then
+    if [[ -f ${xray_qr_config_file} ]]; then
         ws_grpc_mode=$(info_extraction '\"ws_grpc_mode\"')
         tls_mode=$(info_extraction '\"tls\"')
         if [[ ${tls_mode} == "TLS" ]]; then

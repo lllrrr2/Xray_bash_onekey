@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.8"
+shell_version="1.7.0.9"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -122,7 +122,7 @@ is_root() {
 judge() {
     if [[ 0 -eq $? ]]; then
         echo -e "${OK} ${GreenBG} $1 完成 ${Font}"
-        sleep 1
+        sleep 0.5
         wait
     else
         echo -e "${Error} ${RedBG} $1 失败 ${Font}"
@@ -155,7 +155,7 @@ pkg_install() {
             judge "安装 ${1//,/ }"
         else
             echo -e "${OK} ${GreenBG} 已安装 ${1//,/ } ${Font}"
-            sleep 1
+            sleep 0.5
         fi
     else
         if [[ -z $(pkg_install_judge "$1") ]]; then
@@ -163,7 +163,7 @@ pkg_install() {
             judge "安装 $1"
         else
             echo -e "${OK} ${GreenBG} 已安装 $1 ${Font}"
-            sleep 1
+            sleep 0.5
         fi
     fi
 }
@@ -374,16 +374,16 @@ ws_path_set() {
             read -r path_modify_fq
             case $path_modify_fq in
             [yY][eE][sS] | [yY])
-                read -rp "请输入自定义 ws 伪装路径 (不需要“/”):" camouflage
-                echo -e "${OK} ${GreenBG} ws 伪装路径: ${camouflage} ${Font}"
+                read -rp "请输入自定义 ws 伪装路径 (不需要“/”):" path
+                echo -e "${OK} ${GreenBG} ws 伪装路径: ${path} ${Font}"
                 ;;
             *)
-                camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
-                echo -e "${OK} ${GreenBG} ws 伪装路径: ${camouflage} ${Font}"
+                path="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+                echo -e "${OK} ${GreenBG} ws 伪装路径: ${path} ${Font}"
                 ;;
             esac
         else
-            camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+            path="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
         fi
     fi
 }
@@ -521,7 +521,7 @@ modify_nginx_other() {
     sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
     sed -i "s/^\( *\)server_name\( *\).*/\1server_name\2${domain};/g" ${nginx_conf}
     if [[ ${tls_mode} != "XTLS" ]]; then
-        sed -i "s/^\( *\)location ws$/\1location \/${camouflage}/" ${nginx_conf}
+        sed -i "s/^\( *\)location ws$/\1location \/${path}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
         sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
@@ -541,7 +541,7 @@ modify_nginx_other() {
 }
 
 modify_path() {
-    sed -i "s/^\( *\)\"path\".*/\1\"path\": \"\/${camouflage}\"/" ${xray_conf}
+    sed -i "s/^\( *\)\"path\".*/\1\"path\": \"\/${path}\"/" ${xray_conf}
     sed -i "s/^\( *\)\"serviceName\".*/\1\"serviceName\": \"${servicename}\"/" ${xray_conf}
     if [[ ${tls_mode} != "XTLS" ]] || [[ "$xtls_add_more" == "off" ]]; then
         judge "Xray 伪装路径 修改"
@@ -735,17 +735,17 @@ nginx_update() {
                 if [[ -f $xray_qr_config_file ]]; then 
                     if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                         xport=$(info_extraction '\"ws_port\"')
-                        camouflage=$(info_extraction '\"path\"')
+                        path=$(info_extraction '\"path\"')
                         gport=$((RANDOM + 10000))
                         servicename="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
                     elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
                         gport=$(info_extraction '\"grpc_port\"')
                         servicename=$(info_extraction '\"servicename\"')
                         xport=$((RANDOM + 10000))
-                        camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+                        path="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
                     elif [[ ${ws_grpc_mode} == "all" ]]; then
                         xport=$(info_extraction '\"ws_port\"')
-                        camouflage=$(info_extraction '\"path\"')
+                        path=$(info_extraction '\"path\"')
                         gport=$(info_extraction '\"grpc_port\"')
                         servicename=$(info_extraction '\"servicename\"')
                     fi
@@ -948,7 +948,7 @@ xray_conf_add() {
 }
 
 xray_xtls_add_more() {
-    artcamouflage="None"
+    artpath="None"
     artxport="None"
     artservicename="None"
     artgport="None"
@@ -971,15 +971,15 @@ xray_xtls_add_more() {
         judge "添加简单 ws/gRPC 协议"
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
             artxport=${xport}
-            artcamouflage=${camouflage}
+            artpath=${path}
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
             artxport=${gport}
-            artcamouflage=${servicename}
+            artpath=${servicename}
         elif [[ ${ws_grpc_mode} == "all" ]]; then
             artxport=${xport}
-            artcamouflage=${camouflage}
+            artpath=${path}
             artxport=${gport}
-            artcamouflage=${servicename}
+            artpath=${servicename}
         fi
         ;;
     *)
@@ -1036,17 +1036,17 @@ old_config_input () {
         UUID=$(info_extraction '\id\"')
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
             xport=$(info_extraction '\"ws_port\"')
-            camouflage=$(info_extraction '\"path\"')
+            path=$(info_extraction '\"path\"')
             gport=$((RANDOM + 10000))
             servicename="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
             gport=$(info_extraction '\"grpc_port\"')
             servicename=$(info_extraction '\"servicename\"')
             xport=$((RANDOM + 10000))
-            camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+            path="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
         elif [[ ${ws_grpc_mode} == "all" ]]; then
             xport=$(info_extraction '\"ws_port\"')
-            camouflage=$(info_extraction '\"path\"')
+            path=$(info_extraction '\"path\"')
             gport=$(info_extraction '\"grpc_port\"')
             servicename=$(info_extraction '\"servicename\"')
         fi
@@ -1057,17 +1057,17 @@ old_config_input () {
         if [[ ${xtls_add_more} == "on" ]]; then
                 if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                     xport=$(info_extraction '\"ws_port\"')
-                    camouflage=$(info_extraction '\"ws_path\"')
+                    path=$(info_extraction '\"ws_path\"')
                     gport=$((RANDOM + 10000))
                     servicename="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
                 elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
                     gport=$(info_extraction '\"grpc_port\"')
                     servicename=$(info_extraction '\"grpc_servicename\"')
                     xport=$((RANDOM + 10000))
-                    camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+                    path="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
                 elif [[ ${ws_grpc_mode} == "all" ]]; then
                     xport=$(info_extraction '\"ws_port\"')
-                    camouflage=$(info_extraction '\"ws_path\"')
+                    path=$(info_extraction '\"ws_path\"')
                     gport=$(info_extraction '\"grpc_port\"')
                     servicename=$(info_extraction '\"grpc_servicename\"')
                 fi
@@ -1077,17 +1077,17 @@ old_config_input () {
         UUID=$(info_extraction '\id\"')
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
             xport=$(info_extraction '\"ws_port\"')
-            camouflage=$(info_extraction '\"path\"')
+            path=$(info_extraction '\"path\"')
             gport=$((RANDOM + 10000))
             servicename="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
             gport=$(info_extraction '\"grpc_port\"')
             servicename=$(info_extraction '\"servicename\"')
             xport=$((RANDOM + 10000))
-            camouflage="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
+            path="$(head -n 10 /dev/urandom | md5sum | head -c ${random_num})"
         elif [[ ${ws_grpc_mode} == "all" ]]; then
             xport=$(info_extraction '\"ws_port\"')
-            camouflage=$(info_extraction '\"path\"')
+            path=$(info_extraction '\"path\"')
             gport=$(info_extraction '\"grpc_port\"')
             servicename=$(info_extraction '\"servicename\"')
         fi
@@ -1369,7 +1369,7 @@ vless_qr_config_tls_ws() {
     "idc": "${UUID5_char}",
     "id": "${UUID}",
     "net": "ws/gRPC",
-    "path": "${camouflage}",
+    "path": "${path}",
     "servicename": "${servicename}",
     "nginx_version": "${nginx_version}",
     "openssl_version": "${openssl_version}",
@@ -1391,7 +1391,7 @@ vless_qr_config_xtls() {
     "tls": "XTLS",
     "xtls_add_more": "${xtls_add_more}",
     "ws_port": "${artxport}",
-    "ws_path": "${artcamouflage}",
+    "ws_path": "${artpath}",
     "grpc_port": "${artgport}",
     "grpc_servicename": "${artservicename}",
     "nginx_version": "${nginx_version}",
@@ -1412,7 +1412,7 @@ vless_qr_config_ws_only() {
     "idc": "${UUID5_char}",
     "id": "${UUID}",
     "net": "ws/gRPC",
-    "path": "${camouflage}",
+    "path": "${path}",
     "servicename": "${servicename}",
     "nginx_version": "${nginx_version}",
     "openssl_version": "${openssl_version}",
@@ -1430,22 +1430,22 @@ vless_urlquote()
 vless_qr_link_image() {
     if [[ ${tls_mode} == "TLS" ]]; then
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
-            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
+            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
             vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+gRPC%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "all" ]]; then
-            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
+            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
             vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+gRPC%E5%8D%8F%E8%AE%AE"
         fi
     elif [[ ${tls_mode} == "XTLS" ]]; then
         vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?security=xtls&encryption=none&headerType=none&type=tcp&flow=xtls-rprx-direct#$(vless_urlquote $(info_extraction '\"host\"'))+xtls%E5%8D%8F%E8%AE%AE"
     elif [[ ${tls_mode} != "None" ]]; then
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
-            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"ws_port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
+            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"ws_port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
             vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"grpc_port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&encryption=none&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACgrpc%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "all" ]]; then
-            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"ws_port\"')?path=$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
+            vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"ws_port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
             vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"grpc_port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&encryption=none&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACgrpc%E5%8D%8F%E8%AE%AE"
         fi
     fi
@@ -1554,11 +1554,11 @@ basic_information() {
         echo -e "${Red} 底层传输安全 (tls):${Font} $(info_extraction '\"tls\"') "
         if [[ ${tls_mode} != "XTLS" ]]; then
             if [[ ${ws_grpc_mode} == "onlyws" ]]; then
-                echo -e "${Red} 路径 (path 不要落下/):${Font} $(info_extraction '\"path\"') "
+                echo -e "${Red} 路径 (path 不要落下/):${Font} /$(info_extraction '\"path\"') "
             elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
                 echo -e "${Red} serviceName (不需要加/):${Font} $(info_extraction '\"servicename\"') "
             elif [[ ${ws_grpc_mode} == "all" ]]; then
-                echo -e "${Red} 路径 (path 不要落下/):${Font} $(info_extraction '\"path\"') "
+                echo -e "${Red} 路径 (path 不要落下/):${Font} /$(info_extraction '\"path\"') "
                 echo -e "${Red} serviceName (不需要加/):${Font} $(info_extraction '\"servicename\"') "
             fi
         else
@@ -1566,13 +1566,13 @@ basic_information() {
             if [[ "$xtls_add_more" == "on" ]]; then
                 if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                     echo -e "${Red} ws 端口 (port):${Font} $(info_extraction '\"ws_port\"') "
-                    echo -e "${Red} ws 路径 (不要落下/):${Font} $(info_extraction '\"ws_path\"') "
+                    echo -e "${Red} ws 路径 (不要落下/):${Font} /$(info_extraction '\"ws_path\"') "
                 elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
                     echo -e "${Red} gRPC 端口 (port):${Font} $(info_extraction '\"grpc_port\"') "
                     echo -e "${Red} gRPC serviceName (不需要加/):${Font} $(info_extraction '\"grpc_servicename\"') "
                 elif [[ ${ws_grpc_mode} == "all" ]]; then
                     echo -e "${Red} ws 端口 (port):${Font} $(info_extraction '\"ws_port\"') "
-                    echo -e "${Red} ws 路径 (不要落下/):${Font} $(info_extraction '\"ws_path\"') "
+                    echo -e "${Red} ws 路径 (不要落下/):${Font} /$(info_extraction '\"ws_path\"') "
                     echo -e "${Red} gRPC 端口 (port):${Font} $(info_extraction '\"grpc_port\"') "
                     echo -e "${Red} gRPC serviceName (不需要加/):${Font} $(info_extraction '\"grpc_servicename\"') "
                 fi

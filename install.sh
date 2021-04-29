@@ -519,7 +519,7 @@ modify_nginx_port() {
 
 modify_nginx_other() {
     sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
-    sed -i "s/^\( *\)server_name.*/\1server_name\\t\\t${domain};/g" ${nginx_conf}
+    sed -i "s/^\( *\)server_name\( *\).*/\1server_name\2${domain};/g" ${nginx_conf}
     if [[ ${tls_mode} != "XTLS" ]]; then
         sed -i "s/^\( *\)location ws$/\1location \/${camouflage}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}

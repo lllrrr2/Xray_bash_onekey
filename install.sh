@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.13"
+shell_version="1.7.0.14"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -262,7 +262,7 @@ port_set() {
 }
 
 ws_grpc_choose() {
-    echo -e "${GreenBG} 请选择 安装协议 ws/gRPC ${Font}"
+    echo -e "\n${GreenBG} 请选择 安装协议 ws/gRPC ${Font}"
     echo "1: ws"
     echo "2: gRPC"
     echo "3: ws+gRPC (默认)"
@@ -286,7 +286,7 @@ ws_grpc_choose() {
 ws_inbound_port_set() {
     if [[ "on" != ${old_config_status} ]]; then
         if [[ ${ws_grpc_mode} == "onlyws" ]] || [[ ${ws_grpc_mode} == "all" ]]; then
-            echo -e "${GreenBG} 是否需要自定义 ws inbound_port [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 是否需要自定义 ws inbound_port [Y/N]? ${Font}"
             read -r inbound_port_modify_fq
             case $inbound_port_modify_fq in
             [yY][eE][sS] | [yY])
@@ -311,7 +311,7 @@ ws_inbound_port_set() {
 grpc_inbound_port_set() {
     if [[ "on" != ${old_config_status} ]]; then
         if [[ ${ws_grpc_mode} == "onlygRPC" ]] || [[ ${ws_grpc_mode} == "all" ]]; then
-            echo -e "${GreenBG} 是否需要自定义 gRPC inbound_port [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 是否需要自定义 gRPC inbound_port [Y/N]? ${Font}"
             read -r inbound_port_modify_fq
             case $inbound_port_modify_fq in
             [yY][eE][sS] | [yY])
@@ -370,7 +370,7 @@ firewall_set() {
 ws_path_set() {
     if [[ "on" != ${old_config_status} ]]; then
         if [[ ${ws_grpc_mode} == "onlyws" ]] || [[ ${ws_grpc_mode} == "all" ]]; then
-            echo -e "${GreenBG} 是否需要自定义 ws 伪装路径 [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 是否需要自定义 ws 伪装路径 [Y/N]? ${Font}"
             read -r path_modify_fq
             case $path_modify_fq in
             [yY][eE][sS] | [yY])
@@ -391,7 +391,7 @@ ws_path_set() {
 grpc_path_set() {
     if [[ "on" != ${old_config_status} ]]; then
         if [[ ${ws_grpc_mode} == "onlygRPC" ]] || [[ ${ws_grpc_mode} == "all" ]]; then
-            echo -e "${GreenBG} 是否需要自定义 gRPC 伪装路径 [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 是否需要自定义 gRPC 伪装路径 [Y/N]? ${Font}"
             read -r path_modify_fq
             case $path_modify_fq in
             [yY][eE][sS] | [yY])
@@ -412,7 +412,7 @@ grpc_path_set() {
 
 UUID_set() {
     if [[ "on" != ${old_config_status} ]]; then
-        echo -e "${GreenBG} 是否需要自定义字符串映射为 UUIDv5 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 是否需要自定义字符串映射为 UUIDv5 [Y/N]? ${Font}"
         read -r need_UUID5
         case $need_UUID5 in
         [yY][eE][sS] | [yY])
@@ -435,12 +435,12 @@ UUID_set() {
 
 nginx_upstream_server_set() {
     if [[ ${tls_mode} == "TLS" ]]; then
-        echo -e "${GreenBG} 是否追加 Nginx 负载均衡 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 是否追加 Nginx 负载均衡 [Y/N]? ${Font}"
         echo -e "${Warning} ${YellowBG} 如不清楚具体用途, 请勿继续! ${Font}"
         read -r nginx_upstream_server_fq
         case $nginx_upstream_server_fq in
         [yY][eE][sS] | [yY])
-            echo -e "${GreenBG} 请选择 追加的协议为 ws 或 gRPC ${Font}"
+            echo -e "\n${GreenBG} 请选择 追加的协议为 ws 或 gRPC ${Font}"
             echo "1: ws"
             echo "2: gRPC"
             read -rp "请输入: " upstream_net
@@ -824,7 +824,7 @@ ssl_install() {
 domain_check() {
     echo -e "\n${GreenBG} 确定 域名 信息 ${Font}"
     read -rp "请输入你的域名信息 (eg:www.idleleo.com):" domain
-    echo -e "${GreenBG} 请选择 公网IP 为 IPv4 或 IPv6 ${Font}"
+    echo -e "\n${GreenBG} 请选择 公网IP 为 IPv4 或 IPv6 ${Font}"
     echo "1: IPv4 (默认)"
     echo "2: IPv6 (不推荐)"
     read -rp "请输入: " ip_version
@@ -952,7 +952,7 @@ xray_xtls_add_more() {
     artxport="None"
     artservicename="None"
     artgport="None"
-    echo -e "${GreenBG} 是否添加简单 ws/gRPC 协议 用于负载均衡 [Y/N]? ${Font}"
+    echo -e "\n${GreenBG} 是否添加简单 ws/gRPC 协议 用于负载均衡 [Y/N]? ${Font}"
     echo -e "${Warning} ${YellowBG} 如不清楚具体用途, 请勿选择! ${Font}"
     read -r xtls_add_more_fq
     case $xtls_add_more_fq in
@@ -998,7 +998,7 @@ xray_xtls_add_more() {
 old_config_exist_check() {
     if [[ -f $xray_qr_config_file ]]; then
         if [[ ${old_tls_mode} == ${tls_mode} ]]; then
-            echo -e "${GreenBG} 检测到旧配置文件, 是否读取旧文件配置 [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 检测到旧配置文件, 是否读取旧文件配置 [Y/N]? ${Font}"
             read -r old_config_fq
             case $old_config_fq in
             [nN][oO]|[nN])
@@ -1012,7 +1012,7 @@ old_config_exist_check() {
                 ;;
             esac
         else
-            echo -e "${GreenBG} 检测到当前安装模式与旧配置的安装模式不一致, 是否保留旧配置文件 [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 检测到当前安装模式与旧配置的安装模式不一致, 是否保留旧配置文件 [Y/N]? ${Font}"
             read -r old_config_fq
             case $old_config_fq in
             [yY][eE][sS] | [yY])
@@ -1093,7 +1093,7 @@ old_config_input () {
         fi
     fi
     if [[ 0 -eq ${read_config_status} ]]; then
-        echo -e "${GreenBG} 检测到旧配置文件不完整, 是否保留旧配置文件 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 检测到旧配置文件不完整, 是否保留旧配置文件 [Y/N]? ${Font}"
         read -r old_config_input_fq
         case $old_config_input_fq in
         [yY][eE][sS] | [yY])
@@ -1292,7 +1292,7 @@ acme_cron_update() {
 
 network_secure() {
     check_system
-    echo -e "${GreenBG} 设置 Fail2ban 用于防止暴力破解, 请选择: ${Font}"
+    echo -e "\n${GreenBG} 设置 Fail2ban 用于防止暴力破解, 请选择: ${Font}"
     echo "1. 安装/启动 Fail2ban"
     echo "2. 卸载/停止 Fail2ban"
     echo "3. 重启 Fail2ban"
@@ -1482,7 +1482,7 @@ vless_qr_link_image() {
 }
 
 vless_link_image_choice() {
-    echo -e "${GreenBG} 请选择生成的分享链接种类: ${Font}"
+    echo -e "\n${GreenBG} 请选择生成的分享链接种类: ${Font}"
     echo "1: V2RayN/V2RayNG/Qv2ray"
     read -rp "请输入: " link_version
     [[ -z ${link_version} ]] && link_version=1
@@ -1587,7 +1587,7 @@ show_information() {
 
 ssl_judge_and_install() {
     if [[ -f "${ssl_chainpath}/xray.key" && -f "${ssl_chainpath}/xray.crt" ]] &&  [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-        echo -e "${GreenBG} 所有证书文件均已存在, 是否保留 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 所有证书文件均已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_1
         case $ssl_delete_1 in
         [nN][oO]|[nN])
@@ -1602,7 +1602,7 @@ ssl_judge_and_install() {
             ;;
         esac
     elif [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]] &&  [[ ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-        echo -e "${GreenBG} 证书文件已存在, 是否保留 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 证书文件已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_2
         case $ssl_delete_2 in
         [nN][oO]|[nN])
@@ -1616,7 +1616,7 @@ ssl_judge_and_install() {
             ;;
         esac
     elif [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]] && [[ ! -f "${ssl_chainpath}/xray.key" || ! -f "${ssl_chainpath}/xray.crt"  ]]; then
-        echo -e "${GreenBG} 证书签发残留文件已存在, 是否保留 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 证书签发残留文件已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_3
         case $ssl_delete_3 in
         [nN][oO]|[nN])
@@ -1661,7 +1661,7 @@ EOF
 
 tls_type() {
     if [[ -f "/etc/nginx/sbin/nginx" ]] && [[ -f "$nginx_conf" ]] && [[ ${tls_mode} != "None" ]]; then
-        echo -e "${GreenBG} 请选择支持的 TLS 版本 (default:2): ${Font}"
+        echo -e "\n${GreenBG} 请选择支持的 TLS 版本 (default:2): ${Font}"
         echo "建议选择 TLS1.2 and TLS1.3 (一般模式)"
         echo "1: TLS1.1 TLS1.2 and TLS1.3 (兼容模式)"
         echo "2: TLS1.2 and TLS1.3 (一般模式)"
@@ -1985,9 +1985,9 @@ update_sh() {
     version_difference=$(echo "(${shell_version:0:3}-${oldest_version:0:3})>0"|bc)
     if [[ ${shell_version} != ${newest_version} ]]; then
         if [[ ${version_difference} == 1 ]]; then
-            echo -e "${Warning} ${YellowBG} 存在新版本, 但版本跨度较大, 可能存在不兼容情况, 是否更新 [Y/N]? ${Font}"
+            echo -e "\n${Warning} ${YellowBG} 存在新版本, 但版本跨度较大, 可能存在不兼容情况, 是否更新 [Y/N]? ${Font}"
         else
-            echo -e "${GreenBG} 存在新版本, 是否更新 [Y/N]? ${Font}"
+            echo -e "\n${GreenBG} 存在新版本, 是否更新 [Y/N]? ${Font}"
         fi
         read -r update_confirm
         case $update_confirm in
@@ -2183,7 +2183,7 @@ menu() {
         bash idleleo
         ;;
     5)
-        echo -e "${Warning} ${YellowBG} 此模式推荐用于负载均衡, 一般情况不推荐使用, 是否安装 [Y/N]? ${Font}"
+        echo -e "\n${Warning} ${YellowBG} 此模式推荐用于负载均衡, 一般情况不推荐使用, 是否安装 [Y/N]? ${Font}"
         read -r wsonly_fq
         case $wsonly_fq in
         [yY][eE][sS] | [yY])

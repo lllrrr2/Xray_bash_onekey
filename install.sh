@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.11"
+shell_version="1.7.0.12"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1407,7 +1407,7 @@ vless_qr_config_ws_only() {
     "host": "${local_ip}",
     "ws_grpc_mode": "${ws_grpc_mode}",
     "ws_port": "${xport}",
-    "grpc_port": "${gport}"
+    "grpc_port": "${gport}",
     "tls": "None",
     "idc": "${UUID5_char}",
     "id": "${UUID}",

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.6"
+shell_version="1.7.0.7"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -523,18 +523,18 @@ modify_nginx_other() {
     if [[ ${tls_mode} != "XTLS" ]]; then
         sed -i "s/^\( *\)location ws$/\1location \/${camouflage}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
+        sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+        sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         if [[ ${shell_mode} == "Nginx+ws+TLS" ]]; then
-            sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "s/^\( *\)#proxy_pass\(.*\)/\1proxy_pass\2/" ${nginx_conf}
         elif [[ ${shell_mode} == "Nginx+gRPC+TLS" ]]; then
-            sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "s/^\( *\)#grpc_pass\(.*\)/\1grpc_pass\2/" ${nginx_conf}
         elif [[ ${shell_mode} == "Nginx+ws+gRPC+TLS" ]]; then
-            sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
-            sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            sed -i "s/^\( *\)#proxy_pass\(.*\)/\1proxy_pass\2/" ${nginx_conf}
+            sed -i "s/^\( *\)#grpc_pass\(.*\)/\1grpc_pass\2/" ${nginx_conf}
         fi
     fi
     sed -i "s/^\( *\)return 301.*/\1return 301 https:\/\/${domain}\$request_uri;/" ${nginx_conf}
-    #sed -i "s/^\( *\)returc$/\1return 302 https:\/\/www.idleleo.com\/helloworld;/" ${nginx_conf}
-    #sed -i "s/^\( *\)locatioc$/\1location \//" ${nginx_conf}
     sed -i "/error_page.*504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
 }
 
@@ -1133,7 +1133,7 @@ nginx_conf_add() {
 
         location grpc
         {
-            grpc_pass grpc://xray-grpc-server;
+            #grpc_pass grpc://xray-grpc-server;
             grpc_read_timeout 1800s;
             grpc_connect_timeout 180s;
             grpc_send_timeout 180s;
@@ -1143,7 +1143,7 @@ nginx_conf_add() {
 
         location ws
         {
-            proxy_pass http://xray-ws-server;
+            #proxy_pass http://xray-ws-server;
             proxy_redirect default;
             proxy_http_version 1.1;
             proxy_connect_timeout 180s;
@@ -1489,7 +1489,6 @@ vless_link_image_choice() {
     else
         vless_qr_link_image
     fi
-    echo -e "${Warning} ${YellowBG} VLESS 目前分享链接规范为实验阶段, 请自行判断是否适用 ${Font}"
 }
 
 info_extraction() {
@@ -1539,10 +1538,10 @@ basic_information() {
             if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                 echo -e "${Red} Xray ws 端口 (inbound_port):${Font} $(info_extraction '\"ws_port\"') "
             elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
-                echo -e "${Red} Xray gRPC端口 (inbound_port):${Font} $(info_extraction '\"grpc_port\"') "
+                echo -e "${Red} Xray gRPC 端口 (inbound_port):${Font} $(info_extraction '\"grpc_port\"') "
             elif [[ ${ws_grpc_mode} == "all" ]]; then
                 echo -e "${Red} Xray ws 端口 (inbound_port):${Font} $(info_extraction '\"ws_port\"') "
-                echo -e "${Red} Xray gRPC端口 (inbound_port):${Font} $(info_extraction '\"grpc_port\"') "
+                echo -e "${Red} Xray gRPC 端口 (inbound_port):${Font} $(info_extraction '\"grpc_port\"') "
             fi
         fi
         echo -e "${Red} UUIDv5 映射字符串:${Font} $(info_extraction '\"idc\"')"
@@ -1577,7 +1576,7 @@ basic_information() {
                 fi
             fi
         fi
-    } >"${xray_info_file}"
+    } > "${xray_info_file}"
 }
 
 show_information() {

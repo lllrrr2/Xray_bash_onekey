@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.1"
+shell_version="1.7.0.3"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -519,7 +519,7 @@ modify_nginx_port() {
 
 modify_nginx_other() {
     sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
-    sed -i "s/^\( *\)server_name.*/\1server_name ${domain};/" ${nginx_conf}
+    sed -i "s/^\( *\)server_name.*/\1server_name\\t\\t${domain};/g" ${nginx_conf}
     if [[ ${tls_mode} != "XTLS" ]]; then
         sed -i "s/^\( *\)location ws$/\1location \/${camouflage}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
@@ -532,9 +532,9 @@ modify_nginx_other() {
             sed -i "/#xray-grpc-serverc/c \\\t\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         fi
     fi
-    sed -i "s/^\( *\)return$/\1return 301 https://${domain}\$request_uri;/" ${nginx_conf}
-    sed -i "s/^\( *\)returc$/\1return 302 https://www.idleleo.com/helloworld;/" ${nginx_conf}
-    sed -i "s/^\( *\)locatioc$/\1location \//" ${nginx_conf}
+    sed -i "s/^\( *\)return$/\1return 301 https:\/\/${domain}\$request_uri;/" ${nginx_conf}
+    #sed -i "s/^\( *\)returc$/\1return 302 https:\/\/www.idleleo.com\/helloworld;/" ${nginx_conf}
+    #sed -i "s/^\( *\)locatioc$/\1location \//" ${nginx_conf}
     sed -i "/error_page.*504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
 }
 
@@ -716,7 +716,7 @@ nginx_install() {
     
     # 修改基本配置
     #sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/conf/nginx.conf
-    sed -i 's/worker_processes  1;/worker_processes  4;/' ${nginx_dir}/conf/nginx.conf
+    sed -i "s/worker_processes  1;/worker_processes  4;/" ${nginx_dir}/conf/nginx.conf
     sed -i "s/^\( *\)worker_connections  1024;.*/\1worker_connections  4096;/" ${nginx_dir}/conf/nginx.conf
 
     # 删除临时文件
@@ -1137,8 +1137,8 @@ nginx_conf_add() {
             grpc_read_timeout 1800s;
             grpc_connect_timeout 180s;
             grpc_send_timeout 180s;
-            grpc_set_header X-Real-IP $remote_addr;
-            grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            grpc_set_header X-Real-IP \$remote_addr;
+            grpc_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
 
         location ws
@@ -1160,9 +1160,9 @@ nginx_conf_add() {
             proxy_set_header Early-Data \$ssl_early_data;
         }
         
-        locatioc
+        location /
         {
-            returc
+            return 302 https://www.idleleo.com/helloworld;
         }
     }
     server {
@@ -1200,9 +1200,9 @@ nginx_conf_add_xtls() {
         real_ip_header    X-Forwarded-For;
         real_ip_recursive on;
         add_header Strict-Transport-Security "max-age=63072000" always;
-        locatioc
+        location /
         {
-            returc
+            return 302 https://www.idleleo.com/helloworld;
         }
     }
     server {
@@ -1805,7 +1805,7 @@ uninstall_all() {
         esac
     fi
     systemctl daemon-reload
-    echo -e "${OK} ${GreenBG} 已卸载, SSL 证书文件已保留 ${Font}"
+    echo -e "${OK} ${GreenBG} 已卸载, SSL 证书文件已保留\n ${Font}"
 }
 
 delete_tls_key_and_crt() {

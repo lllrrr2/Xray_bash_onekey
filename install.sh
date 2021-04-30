@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.18"
+shell_version="1.7.0.19"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -315,7 +315,7 @@ grpc_inbound_port_set() {
             read -r inbound_port_modify_fq
             case $inbound_port_modify_fq in
             [yY][eE][sS] | [yY])
-                read -rp "请输入自定义 gRPC inbound_port (请勿与连接端口相同！):" xport
+                read -rp "请输入自定义 gRPC inbound_port (请勿与连接端口相同！):" gport
                 if [[ ${gport} -le 0 ]] || [[ ${gport} -gt 65535 ]]; then
                     echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值! ${Font}"
                     grpc_inbound_port_set
@@ -503,7 +503,7 @@ modify_inbound_port() {
     elif [[ ${tls_mode} == "XTLS" ]]; then
         #        sed -i "/\"port\"/c  \    \"port\":${port}," ${xray_conf}
         sed -i "8s/^\( *\)\"port\".*/\1\"port\": ${port},/" ${xray_conf}
-        sed -i "3s/^\( *\)\"port\".*/\1\"port\": ${xport},/" ${xray_conf}
+        sed -i "38s/^\( *\)\"port\".*/\1\"port\": ${xport},/" ${xray_conf}
         sed -i "59s/^\( *\)\"port\".*/\1\"port\": ${gport},/" ${xray_conf}
     fi
     judge "Xray inbound port 修改"
@@ -963,8 +963,8 @@ xray_xtls_add_more() {
         xtls_add_more="on"
         ws_grpc_choose
         ws_inbound_port_set
-        ws_path_set
         grpc_inbound_port_set
+        ws_path_set
         grpc_path_set
         port_exist_check "${xport}"
         port_exist_check "${gport}"
@@ -988,8 +988,8 @@ xray_xtls_add_more() {
     *)
         xtls_add_more="off"
         ws_inbound_port_set
-        ws_path_set
         grpc_inbound_port_set
+        ws_path_set
         grpc_path_set
         modify_path
         modify_inbound_port

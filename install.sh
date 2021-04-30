@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.15"
+shell_version="1.7.0.16"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -941,6 +941,7 @@ xray_conf_add() {
         wget --no-check-certificate https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/VLESS_xtls/config.json -O config.json
         xray_xtls_add_more
     elif [[ ${tls_mode} == "None" ]]; then
+        wget --no-check-certificate https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/VLESS_tls/config.json -O config.json
         modify_listen_address
     fi
     modify_alterid

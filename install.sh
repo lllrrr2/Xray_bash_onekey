@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.14"
+shell_version="1.7.0.15"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1136,9 +1136,9 @@ nginx_conf_add() {
         location grpc
         {
             #grpc_pass grpc://xray-grpc-server;
-            grpc_read_timeout 1800s;
-            grpc_connect_timeout 180s;
-            grpc_send_timeout 180s;
+            grpc_connect_timeout 60s;
+            grpc_read_timeout 720m;
+            grpc_send_timeout 720m;
             grpc_set_header X-Real-IP \$remote_addr;
             grpc_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
@@ -1148,9 +1148,9 @@ nginx_conf_add() {
             #proxy_pass http://xray-ws-server;
             #proxy_redirect default;
             proxy_http_version 1.1;
-            proxy_connect_timeout 180s;
-            proxy_send_timeout 180s;
-            proxy_read_timeout 1800s;
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 720m;
+            proxy_read_timeout 720m;
             proxy_buffering off;
             proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -1195,22 +1195,24 @@ nginx_conf_add_xtls() {
     touch ${nginx_conf}
     cat >${nginx_conf} <<EOF
     server_tokens off;
+
     server {
         listen 127.0.0.1:8080 proxy_protocol;
-        server_name serveraddr.com;
-        set_real_ip_from 127.0.0.1;
-        real_ip_header    X-Forwarded-For;
-        real_ip_recursive on;
+        server_name         serveraddr.com;
+        set_real_ip_from    127.0.0.1;
+        real_ip_header      X-Forwarded-For;
+        real_ip_recursive   on;
         add_header Strict-Transport-Security "max-age=63072000" always;
         location /
         {
             return 302 https://www.idleleo.com/helloworld;
         }
     }
+
     server {
         listen 80;
         listen [::]:80;
-        server_name serveraddr.com;
+        server_name         serveraddr.com;
         return 301 https://use.shadowsocksr.win\$request_uri;
     }
 EOF
@@ -1413,10 +1415,7 @@ vless_qr_config_ws_only() {
     "id": "${UUID}",
     "net": "ws/gRPC",
     "path": "${path}",
-    "servicename": "${servicename}",
-    "nginx_version": "${nginx_version}",
-    "openssl_version": "${openssl_version}",
-    "jemalloc_version": "${jemalloc_version}"
+    "servicename": "${servicename}"
 }
 EOF
 }
@@ -1681,7 +1680,7 @@ tls_type() {
                 sed -i "s/^\( *\)ssl_protocols\( *\).*/\1ssl_protocols\2TLSv1.1 TLSv1.2 TLSv1.3;/" $nginx_conf
                 echo -e "${OK} ${GreenBG} 已切换至 TLS1.1 TLS1.2 and TLS1.3 ${Font}"
             else
-                echo -e "${Error} ${RedBG} XTLS最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
+                echo -e "${Error} ${RedBG} XTLS 最低版本应大于 TLS1.1, 请重新选择！ ${Font}" 
                 tls_type
             fi
         else

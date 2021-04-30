@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.17"
+shell_version="1.7.0.18"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -976,13 +976,13 @@ xray_xtls_add_more() {
             artxport=${xport}
             artpath=${path}
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
-            artxport=${gport}
-            artpath=${servicename}
+            artgport=${gport}
+            artservicename=${servicename}
         elif [[ ${ws_grpc_mode} == "all" ]]; then
             artxport=${xport}
             artpath=${path}
-            artxport=${gport}
-            artpath=${servicename}
+            artgport=${gport}
+            artservicename=${servicename}
         fi
         ;;
     *)

@@ -290,7 +290,7 @@ ws_inbound_port_set() {
             read -r inbound_port_modify_fq
             case $inbound_port_modify_fq in
             [yY][eE][sS] | [yY])
-                read -rp "请输入自定义 ws inbound_port (请勿与连接端口相同！):" xport
+                read -rp "请输入自定义 ws inbound_port (请勿与其他端口相同！):" xport
                 if [[ ${xport} -le 0 ]] || [[ ${xport} -gt 65535 ]]; then
                     echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值! ${Font}"
                     ws_inbound_port_set
@@ -315,7 +315,7 @@ grpc_inbound_port_set() {
             read -r inbound_port_modify_fq
             case $inbound_port_modify_fq in
             [yY][eE][sS] | [yY])
-                read -rp "请输入自定义 gRPC inbound_port (请勿与连接端口相同！):" gport
+                read -rp "请输入自定义 gRPC inbound_port (请勿与其他端口相同！):" gport
                 if [[ ${gport} -le 0 ]] || [[ ${gport} -gt 65535 ]]; then
                     echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值! ${Font}"
                     grpc_inbound_port_set

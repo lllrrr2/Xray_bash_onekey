@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.0.19"
+shell_version="1.7.1.0"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -452,6 +452,9 @@ nginx_upstream_server_set() {
                 sed -i "/xray-ws-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             elif [[ ${upstream_net} == 2 ]]; then
                 sed -i "/xray-grpc-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            else
+                echo -e "${Error} ${RedBG} 请输入正确的数字! ${Font}"
+                nginx_upstream_server_set
             fi
             iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
             iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT

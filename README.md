@@ -7,7 +7,6 @@
 
 ### 使用说明
 * 可以直接输入命令：`idleleo` 管理脚本。
-* 减少直接访问，隐藏代理域名。
 * 访问域名 302 跳转至 https://www.idleleo.com/helloworld （了解配置过程可自行修改）。
 * 阻止 HTTP 直接访问服务器 IP 。
 * 使用来自 [@DuckSoft](https://github.com/DuckSoft) 的分享链接[提案](https://github.com/XTLS/Xray-core/issues/91) (beta)，支持 Qv2ray、V2rayN、V2rayNG。
@@ -20,7 +19,7 @@
 
 ### 准备工作
 * 准备一个域名，并将A记录添加好。
-* [Xray官方说明](https://xtls.github.io)，大概了解 TLS WebSocket XTLS 及 Xray 相关信息。
+* [Xray官方说明](https://xtls.github.io)，大概了解 TLS WebSocket gRPC XTLS 及 Xray 相关信息。
 * **安装好 wget**，Centos用户运行：`yum install -y wget`；Debian/Ubuntu用户运行：`apt install -y wget`。
 
 ### 安装/更新方式（此为Xray版）

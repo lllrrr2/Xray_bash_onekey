@@ -447,14 +447,11 @@ nginx_upstream_server_set() {
             read -rp "请输入: " upstream_net
             read -rp "请输入负载均衡 主机 (host):" upstream_host
             read -rp "请输入负载均衡 端口 (port):" upstream_port
-            read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight
-            if [[ ${upstream_net} == 1 ]]; then
-                sed -i "/xray-ws-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
-            elif [[ ${upstream_net} == 2 ]]; then
+            read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight    
+            if [[ ${upstream_net} == 2 ]]; then
                 sed -i "/xray-grpc-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             else
-                echo -e "${Error} ${RedBG} 请输入正确的数字! ${Font}"
-                nginx_upstream_server_set
+                sed -i "/xray-ws-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
             fi
             iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
             iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT

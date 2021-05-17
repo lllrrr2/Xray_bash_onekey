@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.1.0"
+shell_version="1.7.1.1"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1435,10 +1435,10 @@ vless_qr_link_image() {
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
             vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
-            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+gRPC%E5%8D%8F%E8%AE%AE"
+            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?serviceName=$(vless_urlquote $(info_extraction '\"servicename\"'))&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+gRPC%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "all" ]]; then
             vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+ws%E5%8D%8F%E8%AE%AE"
-            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+gRPC%E5%8D%8F%E8%AE%AE"
+            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?serviceName=$(vless_urlquote $(info_extraction '\"servicename\"'))&security=tls&encryption=none&host=$(vless_urlquote $(info_extraction '\"host\"'))&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+gRPC%E5%8D%8F%E8%AE%AE"
         fi
     elif [[ ${tls_mode} == "XTLS" ]]; then
         vless_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"port\"')?security=xtls&encryption=none&headerType=none&type=tcp&flow=xtls-rprx-direct#$(vless_urlquote $(info_extraction '\"host\"'))+xtls%E5%8D%8F%E8%AE%AE"
@@ -1446,10 +1446,10 @@ vless_qr_link_image() {
         if [[ ${ws_grpc_mode} == "onlyws" ]]; then
             vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"ws_port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "onlygRPC" ]]; then
-            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"grpc_port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&encryption=none&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACgrpc%E5%8D%8F%E8%AE%AE"
+            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"grpc_port\"')?serviceName=$(vless_urlquote $(info_extraction '\"servicename\"'))&encryption=none&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACgrpc%E5%8D%8F%E8%AE%AE"
         elif [[ ${ws_grpc_mode} == "all" ]]; then
             vless_ws_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"ws_port\"')?path=/$(vless_urlquote $(info_extraction '\"path\"'))%3Fed%3D2048&encryption=none&type=ws#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACws%E5%8D%8F%E8%AE%AE"
-            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"grpc_port\"')?path=$(vless_urlquote $(info_extraction '\"servicename\"'))&encryption=none&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACgrpc%E5%8D%8F%E8%AE%AE"
+            vless_grpc_link="vless://$(info_extraction '\"id\"')@$(vless_urlquote $(info_extraction '\"host\"')):$(info_extraction '\"grpc_port\"')?serviceName=$(vless_urlquote $(info_extraction '\"servicename\"'))&encryption=none&type=grpc#$(vless_urlquote $(info_extraction '\"host\"'))+%E5%8D%95%E7%8B%ACgrpc%E5%8D%8F%E8%AE%AE"
         fi
     fi
         {

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.1.1"
+shell_version="1.7.1.2"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"

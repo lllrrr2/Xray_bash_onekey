@@ -25,7 +25,7 @@
 ### 安装/更新方式
 VLESS+Nginx+WebSocket/gRPC+TLS 或 VLESS+XTLS+Nginx+ws+gRPC  或 ws/gRPC ONLY 三选一：
 ```
-wget -N --no-check-certificate -q -O install.sh "https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh" && chmod +x install.sh && bash install.sh
+bash <(curl -Ss https://www.idleleo.com/install.sh)
 ```
 
 ### 注意事项

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.1.3"
+shell_version="1.7.1.4"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -521,7 +521,7 @@ modify_nginx_port() {
 modify_nginx_other() {
     sed -i '$i include /etc/idleleo/conf/nginx/*.conf;' ${nginx_dir}/conf/nginx.conf
     sed -i "s/^\( *\)server_name\( *\).*/\1server_name\2${domain};/g" ${nginx_conf}
-    if [[ ${tls_mode} != "XTLS" ]]; then
+    if [[ ${tls_mode} == "TLS" ]]; then
         sed -i "s/^\( *\)location ws$/\1location \/${path}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
         sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
@@ -732,8 +732,11 @@ nginx_install() {
 nginx_update() {
     if [[ -f "/etc/nginx/sbin/nginx" ]]; then
         if [[ ${nginx_version} != $(info_extraction '\"nginx_version\"') ]] || [[ ${openssl_version} != $(info_extraction '\"openssl_version\"') ]] || [[ ${jemalloc_version} != $(info_extraction '\"jemalloc_version\"') ]]; then
-            if [[ ${tls_mode} == "TLS" ]]; then
-                if [[ -f $xray_qr_config_file ]]; then 
+            ip_check
+            if [[ -f $xray_qr_config_file ]]; then
+                domain=$(info_extraction '\"host\"')
+                port=$(info_extraction '\"port\"')
+                if [[ ${tls_mode} == "TLS" ]]; then
                     if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                         xport=$(info_extraction '\"ws_port\"')
                         path=$(info_extraction '\"path\"')
@@ -756,34 +759,19 @@ nginx_update() {
                         clear 
                         bash idleleo
                     fi
-                else
-                    echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
-                    timeout "清空屏幕!"
-                    clear
-                    bash idleleo
-                fi
-            elif [[ ${tls_mode} == "XTLS" ]]; then
-                if [[ -f $xray_qr_config_file ]]; then
-                    domain=$(info_extraction '\"host\"')
-                    port=$(info_extraction '\"port\"')
-                    if [[ 0 -eq ${read_config_status} ]]; then
-                        echo -e "${Error} ${RedBG} 旧配置文件不完整, 退出升级 ${Font}"
-                        timeout "清空屏幕!"
-                        clear 
-                        bash idleleo
-                    fi
-                else
-                    echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
+                elif [[ ${tls_mode} == "None" ]]; then
+                    echo -e "${Error} ${RedBG} 当前安装模式不需要 Nginx ! ${Font}"
                     timeout "清空屏幕!"
                     clear
                     bash idleleo
                 fi
             else
-                echo -e "${Error} ${RedBG} 当前安装模式不需要 Nginx ! ${Font}"
+                echo -e "${Error} ${RedBG} 旧配置文件不存在, 退出升级 ${Font}"
                 timeout "清空屏幕!"
                 clear
                 bash idleleo
             fi
+            wait
             service_stop
             timeout "删除旧版 Nginx !"
             rm -rf ${nginx_dir}

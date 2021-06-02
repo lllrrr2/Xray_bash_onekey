@@ -735,8 +735,8 @@ nginx_update() {
             ip_check
             if [[ -f $xray_qr_config_file ]]; then
                 domain=$(info_extraction '\"host\"')
-                port=$(info_extraction '\"port\"')
                 if [[ ${tls_mode} == "TLS" ]]; then
+                    port=$(info_extraction '\"port\"')
                     if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                         xport=$(info_extraction '\"ws_port\"')
                         path=$(info_extraction '\"path\"')

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.1.4"
+shell_version="1.7.1.5"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -524,8 +524,6 @@ modify_nginx_other() {
     if [[ ${tls_mode} == "TLS" ]]; then
         sed -i "s/^\( *\)location ws$/\1location \/${path}/" ${nginx_conf}
         sed -i "s/^\( *\)location grpc$/\1location \/${servicename}/" ${nginx_conf}
-        sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
-        sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
         if [[ ${shell_mode} == "Nginx+ws+TLS" ]]; then
             sed -i "s/^\( *\)#proxy_pass\(.*\)/\1proxy_pass\2/" ${nginx_conf}
             sed -i "s/^\( *\)#proxy_redirect default;/\1proxy_redirect default;/" ${nginx_conf}
@@ -539,6 +537,11 @@ modify_nginx_other() {
     fi
     sed -i "s/^\( *\)return 301.*/\1return 301 https:\/\/${domain}\$request_uri;/" ${nginx_conf}
     sed -i "/error_page.*504/i \\\t\\tif (\$host = '${local_ip}') {\\n\\t\\t\\treturn 302 https:\/\/www.idleleo.com\/helloworld;\\n\\t\\t}" ${nginx_dir}/conf/nginx.conf
+}
+
+modify_nginx_servers() {
+    sed -i "/#xray-ws-serverc/c \\\t\\t\\tserver 127.0.0.1:${xport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+    sed -i "/#xray-grpc-serverc/c \\\t\\t\\tserver 127.0.0.1:${gport} weight=50 max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
 }
 
 modify_path() {
@@ -1167,17 +1170,6 @@ nginx_conf_add() {
     }
 EOF
 
-    touch ${nginx_upstream_conf}
-    cat >${nginx_upstream_conf} <<EOF
-    upstream xray-ws-server { 
-        #xray-ws-serverc
-    }
-
-    upstream xray-grpc-server { 
-        #xray-grpc-serverc
-    }
-EOF
-
     modify_nginx_port
     modify_nginx_other
     judge "Nginx 配置修改"
@@ -1211,6 +1203,22 @@ EOF
 
     modify_nginx_other
     judge "Nginx 配置修改"
+}
+
+nginx_conf_servers_add() {
+    touch ${nginx_upstream_conf}
+    cat >${nginx_upstream_conf} <<EOF
+    upstream xray-ws-server { 
+        #xray-ws-serverc
+    }
+
+    upstream xray-grpc-server { 
+        #xray-grpc-serverc
+    }
+EOF
+
+    modify_nginx_servers
+    judge "Nginx servers 配置修改"
 }
 
 enable_process_systemd() {
@@ -1897,6 +1905,7 @@ install_xray_ws_tls() {
     nginx_exist_check
     xray_conf_add
     nginx_conf_add
+    nginx_conf_servers_add
     web_camouflage
     ssl_judge_and_install
     nginx_systemd

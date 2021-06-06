@@ -447,6 +447,7 @@ nginx_upstream_server_set() {
             read -rp "请输入: " upstream_choose
             if [[ ${upstream_choose} == 2 ]]; then
                 timeout "即将重置 Nginx 负载均衡配置"
+                wait
                 if [[ -f $xray_qr_config_file ]]; then
                     xport=$(info_extraction '\"ws_port\"')
                     gport=$(info_extraction '\"grpc_port\"')

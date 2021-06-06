@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.1.5"
+shell_version="1.7.1.6"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -436,42 +436,60 @@ UUID_set() {
 
 nginx_upstream_server_set() {
     if [[ ${tls_mode} == "TLS" ]]; then
-        echo -e "\n${GreenBG} 是否追加 Nginx 负载均衡 [Y/N]? ${Font}"
+        echo -e "\n${GreenBG} 是否变更 Nginx 负载均衡 [Y/N]? ${Font}"
         echo -e "${Warning} ${YellowBG} 如不清楚具体用途, 请勿继续! ${Font}"
         read -r nginx_upstream_server_fq
         case $nginx_upstream_server_fq in
         [yY][eE][sS] | [yY])
             echo -e "\n${GreenBG} 请选择 追加的协议为 ws 或 gRPC ${Font}"
-            echo "1: ws"
-            echo "2: gRPC"
-            read -rp "请输入: " upstream_net
-            read -rp "请输入负载均衡 主机 (host):" upstream_host
-            read -rp "请输入负载均衡 端口 (port):" upstream_port
-            read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight    
-            if [[ ${upstream_net} == 2 ]]; then
-                sed -i "/xray-grpc-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+            echo "1: 追加配置"
+            echo "2: 重置配置" 
+            read -rp "请输入: " upstream_choose
+            if [[ ${upstream_choose} == 2 ]]; then
+                timeout "即将重置 Nginx 负载均衡配置"
+                if [[ -f $xray_qr_config_file ]]; then
+                    xport=$(info_extraction '\"ws_port\"')
+                    gport=$(info_extraction '\"grpc_port\"')
+                    rm -rf ${nginx_upstream_conf}
+                    nginx_conf_servers_add
+                    wait
+                    systemctl restart nginx
+                else
+                    echo -e "${Error} ${RedBG} 未检测到配置文件！ ${Font}"
+                fi
             else
-                sed -i "/xray-ws-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
-            fi
-            iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
-            iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT
-            iptables -I OUTPUT -p tcp --sport ${upstream_port} -j ACCEPT
-            iptables -I OUTPUT -p udp --sport ${upstream_port} -j ACCEPT
-            echo -e "${OK} ${GreenBG} 防火墙 追加 完成 ${Font}"
-            if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
-                service iptables save
+                echo -e "\n${GreenBG} 请选择 追加的协议为 ws 或 gRPC ${Font}"
+                echo "1: ws"
+                echo "2: gRPC"
+                read -rp "请输入: " upstream_net
+                read -rp "请输入负载均衡 主机 (host):" upstream_host
+                read -rp "请输入负载均衡 端口 (port):" upstream_port
+                read -rp "请输入负载均衡 权重 (0~100, 初始值为50):" upstream_weight    
+                if [[ ${upstream_net} == 2 ]]; then
+                    sed -i "/xray-grpc-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+                else
+                    sed -i "/xray-ws-server/a \\\t\\t\\tserver ${upstream_host}:${upstream_port} weight=${upstream_weight} max_fails=5 fail_timeout=2;" ${nginx_upstream_conf}
+                fi
+                iptables -I INPUT -p tcp --dport ${upstream_port} -j ACCEPT
+                iptables -I INPUT -p udp --dport ${upstream_port} -j ACCEPT
+                iptables -I OUTPUT -p tcp --sport ${upstream_port} -j ACCEPT
+                iptables -I OUTPUT -p udp --sport ${upstream_port} -j ACCEPT
+                echo -e "${OK} ${GreenBG} 防火墙 追加 完成 ${Font}"
+                if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
+                    service iptables save
+                    wait
+                    service iptables restart
+                    echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
+                else
+                    netfilter-persistent save
+                    wait
+                    systemctl restart iptables
+                    echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
+                fi
                 wait
-                service iptables restart
-                echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
-            else
-                netfilter-persistent save
-                wait
-                systemctl restart iptables
-                echo -e "${OK} ${GreenBG} 防火墙 重启 完成 ${Font}"
+                systemctl restart nginx
+                judge "追加 Nginx 负载均衡"
             fi
-            wait
-            systemctl restart nginx
-            judge "追加 Nginx 负载均衡"
             ;;
         *) ;;
         esac
@@ -2134,7 +2152,7 @@ menu() {
     echo -e "${Green}6.${Font}  变更 UUIDv5/映射字符串"
     echo -e "${Green}7.${Font}  变更 port"
     echo -e "${Green}8.${Font}  变更 TLS 版本"
-    echo -e "${Green}9.${Font}  追加 Nginx 负载均衡配置"
+    echo -e "${Green}9.${Font}  变更 Nginx 负载均衡配置"
     echo -e "—————————————— 查看信息 ——————————————"
     echo -e "${Green}10.${Font} 查看 Xray 实时访问日志"
     echo -e "${Green}11.${Font} 查看 Xray 实时错误日志"

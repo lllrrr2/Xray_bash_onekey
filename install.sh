@@ -225,6 +225,15 @@ dependency_install() {
     fi
 }
 
+read_optimize() {
+    read -rp "$1" $2
+    [[ -z $(eval echo \$$2) ]] && eval $(echo "$2")="$3"
+    if [[ $(eval echo \$$2) -le $4 ]] || [[ $(eval echo \$$2) -gt $5 ]]; then
+            echo -e "${Error} ${RedBG} $6 ${Font}"
+            read_optimize "$1" "$2" $3 $4 $5 "$6"
+    fi
+}
+
 basic_optimization() {
     # 最大文件打开数
     sed -i '/^\*\ *soft\ *nofile\ *[[:digit:]]*/d' /etc/security/limits.conf
@@ -253,12 +262,7 @@ create_directory() {
 port_set() {
     if [[ "on" != ${old_config_status} ]]; then
         echo -e "${GreenBG} 确定 连接端口 ${Font}"
-        read -rp "请输入连接端口 (default:443):" port
-        [[ -z ${port} ]] && port="443"
-        if [[ ${port} -le 0 ]] || [[ ${port} -gt 65535 ]]; then
-            echo -e "${Error} ${RedBG} 请输入 0-65535 之间的值! ${Font}"
-            port_set
-        fi
+        read_optimize "请输入连接端口 (default:443):" "port" 443 0 65535 "请输入 0-65535 之间的值!"
     fi
 }
 

@@ -2097,6 +2097,7 @@ idleleo_commend() {
         version_difference=$(echo "(${shell_version:0:3}-${oldest_version:0:3})>0"|bc)
         if [[ -z ${old_version} ]]; then
             wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+            judge "下载最新脚本"
             clear
             bash idleleo
         elif [[ ${shell_version} != ${oldest_version} ]]; then
@@ -2107,6 +2108,7 @@ idleleo_commend() {
                 [yY][eE][sS] | [yY])
                     rm -rf ${idleleo_dir}/install.sh
                     wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+                    judge "下载最新脚本"
                     clear
                     echo -e "${Warning} ${YellowBG} 脚本版本跨度较大, 若服务无法正常运行请卸载后重装!\n ${Font}"
                     ;;
@@ -2117,6 +2119,7 @@ idleleo_commend() {
             else
                 rm -rf ${idleleo_dir}/install.sh
                 wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+                judge "下载最新脚本"
                 clear
             fi
             bash idleleo
@@ -2132,6 +2135,7 @@ idleleo_commend() {
         wait
         [[ ! -d "${idleleo_dir}" ]] && mkdir -p ${idleleo_dir}
         wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
+        judge "下载最新脚本"
         ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}
         clear
         bash idleleo

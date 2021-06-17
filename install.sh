@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.2.0"
+shell_version="1.7.2.1"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -63,6 +63,7 @@ xray_error_log="/var/log/xray/error.log"
 amce_sh_file="/root/.acme.sh/acme.sh"
 ssl_update_file="${idleleo_dir}/ssl_update.sh"
 cert_group="nobody"
+myemali="my@example.com"
 nginx_version="1.20.1"
 openssl_version="1.1.1k"
 jemalloc_version="5.2.1"
@@ -825,14 +826,15 @@ nginx_update() {
 }
 
 ssl_install() {
-    if [[ ${ID} == "centos" ]]; then
-        pkg_install "nc,socat"
-    else
-        pkg_install "netcat,socat"
-    fi
-    judge "安装 SSL 证书生成脚本依赖"
+    #if [[ ${ID} == "centos" ]]; then
+    #    pkg_install "nc,socat"
+    #else
+    #    pkg_install "netcat,socat"
+    #fi
+    #judge "安装 SSL 证书生成脚本依赖"
 
-    curl https://get.acme.sh | sh
+    read_optimize "请输入注册域名的邮箱 (eg:me@idleleo.com):" "myemail" "NULL"
+    curl https://get.acme.sh | sh -s email=$myemail
     judge "安装 SSL 证书生成脚本"
 }
 

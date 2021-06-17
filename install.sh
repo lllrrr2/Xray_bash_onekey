@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.2.3"
+shell_version="1.7.2.4"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -136,7 +136,7 @@ pkg_install_judge() {
     if [[ "${ID}" == "centos" ]]; then
         yum list installed | grep -iw "^$1"
     else
-        dpkg --get-selections | grep -iw "^$1"
+        dpkg --get-selections | grep -iw "^$1" | grep -ivw "deinstall"
     fi
     wait
 }
@@ -826,7 +826,7 @@ nginx_update() {
 }
 
 ssl_install() {
-    
+
     pkg_install "socat"
     judge "安装 SSL 证书生成脚本依赖"
 

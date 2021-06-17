@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.2.5"
+shell_version="1.7.2.6"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -171,7 +171,7 @@ pkg_install() {
 }
 
 dependency_install() {
-    pkg_install "dbus,git,lsof,wget"
+    pkg_install "bc,curl,dbus,git,lsof,python3,qrencode,wget"
 
     if [[ "${ID}" == "centos" ]]; then
         pkg_install "iputils"
@@ -194,16 +194,6 @@ dependency_install() {
 
     fi
     judge "crontab 自启动配置"
-
-    pkg_install "bc"
-
-    pkg_install "unzip"
-
-    pkg_install "qrencode"
-
-    pkg_install "curl"
-
-    pkg_install "python3"
 
     if [[ ${tls_mode} != "None" ]]; then
         if [[ "${ID}" == "centos" ]]; then
@@ -2131,7 +2121,7 @@ idleleo_commend() {
         fi
     else
         check_system
-        pkg_install "wget"
+        pkg_install "bc,wget"
         wait
         [[ ! -d "${idleleo_dir}" ]] && mkdir -p ${idleleo_dir}
         wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.2.1"
+shell_version="1.7.2.2"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -2130,6 +2130,7 @@ idleleo_commend() {
             echo -e "${Green}可以使用${Red} idleleo ${Font}命令管理脚本\n${Font}"
         fi
     else
+        [[ ! -d "${idleleo_dir}" ]] && mkdir -p ${idleleo_dir}
         wget -N --no-check-certificate -P ${idleleo_dir} https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/install.sh && chmod +x ${idleleo_dir}/install.sh
         ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}
         clear

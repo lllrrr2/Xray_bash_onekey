@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.2.6"
+shell_version="1.7.2.7"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1148,6 +1148,9 @@ nginx_conf_add() {
             grpc_send_timeout 720m;
             grpc_set_header X-Real-IP \$remote_addr;
             grpc_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+
+            # Config for 0-RTT in TLSv1.3
+            proxy_set_header Early-Data \$ssl_early_data;
         }
 
         location ws
@@ -1165,7 +1168,7 @@ nginx_conf_add() {
             proxy_set_header Connection "upgrade";
             proxy_set_header Host \$http_host;
 
-        # Config for 0-RTT in TLSv1.3
+            # Config for 0-RTT in TLSv1.3
             proxy_set_header Early-Data \$ssl_early_data;
         }
         

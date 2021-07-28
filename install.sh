@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.2.7"
+shell_version="1.7.3.0"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1292,19 +1292,30 @@ service_stop(){
 }
 
 acme_cron_update() {
-    wget -N -P ${idleleo_dir} --no-check-certificate https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/ssl_update.sh && chmod +x ${ssl_update_file}
-    if [[ $(crontab -l | grep -c "ssl_update.sh") -lt 1 ]]; then
-        if [[ "${ID}" == "centos" ]]; then
-            #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
-            #        &> /dev/null" /var/spool/cron/root
-            sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/root
+    echo -e "\n${GreenBG} 是否需要设置证书自动更新 [Y/N]? ${Font}"
+    read -r acme_cron_update_fq
+    case $acme_cron_update_fq in
+    [nN][oO]|[nN])
+        ;;
+    *)
+        if [[ "${ssl_self}" != "on" ]]; then
+            wget -N -P ${idleleo_dir} --no-check-certificate https://raw.githubusercontent.com/paniy/Xray_bash_onekey/main/ssl_update.sh && chmod +x ${ssl_update_file}
+            if [[ $(crontab -l | grep -c "ssl_update.sh") -lt 1 ]]; then
+                if [[ "${ID}" == "centos" ]]; then
+                    #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
+                    #        &> /dev/null" /var/spool/cron/root
+                    sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/root
+                else
+                    #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
+                    #        &> /dev/null" /var/spool/cron/crontabs/root
+                    sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/crontabs/root
+                fi
+            fi
+            judge "证书自动更新"
         else
-            #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
-            #        &> /dev/null" /var/spool/cron/crontabs/root
-            sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/crontabs/root
+            echo -e "${Error} ${RedBG} 自定义证书不支持此操作! ${Font}"
         fi
-    fi
-    judge "cron 计划任务更新"
+        ;;
 }
 
 network_secure() {
@@ -1601,8 +1612,11 @@ show_information() {
 }
 
 ssl_judge_and_install() {
+    echo -e "\n${GreenBG} 即将申请证书, 支持使用自定义证书 ${Font}"
+    echo -e "${GreenBG} 如需使用自定义证书, 请将 私钥(xray.key)、证书(xray.crt) 放入${ssl_chainpath}目录 ${Font}"
+    timeout "继续运行!"
     if [[ -f "${ssl_chainpath}/xray.key" && -f "${ssl_chainpath}/xray.crt" ]] &&  [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-        echo -e "\n${GreenBG} 所有证书文件均已存在, 是否保留 [Y/N]? ${Font}"
+        echo -e "${GreenBG} 所有证书文件均已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_1
         case $ssl_delete_1 in
         [nN][oO]|[nN])
@@ -1617,7 +1631,7 @@ ssl_judge_and_install() {
             ;;
         esac
     elif [[ -f "${ssl_chainpath}/xray.key" || -f "${ssl_chainpath}/xray.crt" ]] &&  [[ ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && ! -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-        echo -e "\n${GreenBG} 证书文件已存在, 是否保留 [Y/N]? ${Font}"
+        echo -e "${GreenBG} 证书文件已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_2
         case $ssl_delete_2 in
         [nN][oO]|[nN])
@@ -1628,10 +1642,11 @@ ssl_judge_and_install() {
             ;;
         *) 
             judge "证书应用"
+            ssl_self="on"
             ;;
         esac
     elif [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]] && [[ ! -f "${ssl_chainpath}/xray.key" || ! -f "${ssl_chainpath}/xray.crt"  ]]; then
-        echo -e "\n${GreenBG} 证书签发残留文件已存在, 是否保留 [Y/N]? ${Font}"
+        echo -e "${GreenBG} 证书签发残留文件已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_3
         case $ssl_delete_3 in
         [nN][oO]|[nN])

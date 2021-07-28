@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.7.3.0"
+shell_version="1.7.3.1"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -816,7 +816,6 @@ nginx_update() {
 }
 
 ssl_install() {
-
     pkg_install "socat"
     judge "安装 SSL 证书生成脚本依赖"
 
@@ -1311,7 +1310,7 @@ acme_cron_update() {
                     sed -i "/acme.sh/c 0 3 15 * * bash ${ssl_update_file}" /var/spool/cron/crontabs/root
                 fi
             fi
-            judge "证书自动更新"
+            judge "设置证书自动更新"
         else
             echo -e "${Error} ${RedBG} 自定义证书不支持此操作! ${Font}"
         fi
@@ -1628,6 +1627,7 @@ ssl_judge_and_install() {
             acme
             ;;
         *) 
+            chown -R nobody:${cert_group} ${ssl_chainpath}/*
             judge "证书应用"
             ;;
         esac
@@ -1641,7 +1641,8 @@ ssl_judge_and_install() {
             ssl_install
             acme
             ;;
-        *) 
+        *)
+            chown -R nobody:${cert_group} ${ssl_chainpath}/*
             judge "证书应用"
             ssl_self="on"
             ;;
@@ -1658,6 +1659,7 @@ ssl_judge_and_install() {
             ;;
         *) 
             "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath ${ssl_chainpath}/xray.crt --keypath ${ssl_chainpath}/xray.key --ecc
+            chown -R nobody:${cert_group} ${ssl_chainpath}/*
             judge "证书应用"
             ;;
         esac

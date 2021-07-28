@@ -1614,7 +1614,7 @@ show_information() {
 ssl_judge_and_install() {
     echo -e "\n${GreenBG} 即将申请证书, 支持使用自定义证书 ${Font}"
     echo -e "${GreenBG} 如需使用自定义证书, 请将 私钥(xray.key)、证书(xray.crt) 放入${ssl_chainpath}目录 ${Font}"
-    timeout "继续运行!"
+    timeout "继续安装!"
     if [[ -f "${ssl_chainpath}/xray.key" && -f "${ssl_chainpath}/xray.crt" ]] &&  [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
         echo -e "${GreenBG} 所有证书文件均已存在, 是否保留 [Y/N]? ${Font}"
         read -r ssl_delete_1

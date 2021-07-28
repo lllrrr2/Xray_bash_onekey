@@ -1316,6 +1316,7 @@ acme_cron_update() {
             echo -e "${Error} ${RedBG} 自定义证书不支持此操作! ${Font}"
         fi
         ;;
+    esac
 }
 
 network_secure() {

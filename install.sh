@@ -83,15 +83,15 @@ check_system() {
     if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Centos ${VERSION_ID} ${VERSION} ${Font}"
         INS="yum"
-        [[ ! -f $xray_qr_config_file ]] && $INS update
+        [[ ! -f ${xray_qr_config_file} ]] && $INS update
     elif [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Debian ${VERSION_ID} ${VERSION} ${Font}"
         INS="apt"
-        [[ ! -f $xray_qr_config_file ]] && $INS update
+        [[ ! -f ${xray_qr_config_file} ]] && $INS update
     elif [[ "${ID}" == "ubuntu" && $(echo "${VERSION_ID}" | cut -d '.' -f1) -ge 16 ]]; then
         echo -e "${OK} ${GreenBG} 当前系统为 Ubuntu ${VERSION_ID} ${UBUNTU_CODENAME} ${Font}"
         INS="apt"
-        if [[ ! -f $xray_qr_config_file ]]; then
+        if [[ ! -f ${xray_qr_config_file} ]]; then
             rm /var/lib/dpkg/lock
             dpkg --configure -a
             rm /var/lib/apt/lists/lock
@@ -453,7 +453,7 @@ nginx_upstream_server_set() {
             if [[ ${upstream_choose} == 2 ]]; then
                 timeout "即将重置 Nginx 负载均衡配置"
                 wait
-                if [[ -f $xray_qr_config_file ]]; then
+                if [[ -f ${xray_qr_config_file} ]]; then
                     xport=$(info_extraction '\"ws_port\"')
                     gport=$(info_extraction '\"grpc_port\"')
                     rm -rf ${nginx_upstream_conf}
@@ -782,7 +782,7 @@ nginx_update() {
     if [[ -f "/etc/nginx/sbin/nginx" ]] && [[ ${bt_nginx} != "Yes" ]]; then
         if [[ ${nginx_version} != $(info_extraction '\"nginx_version\"') ]] || [[ ${openssl_version} != $(info_extraction '\"openssl_version\"') ]] || [[ ${jemalloc_version} != $(info_extraction '\"jemalloc_version\"') ]]; then
             ip_check
-            if [[ -f $xray_qr_config_file ]]; then
+            if [[ -f ${xray_qr_config_file} ]]; then
                 domain=$(info_extraction '\"host\"')
                 if [[ ${tls_mode} == "TLS" ]]; then
                     port=$(info_extraction '\"port\"')
@@ -1034,13 +1034,13 @@ xray_xtls_add_more() {
 }
 
 old_config_exist_check() {
-    if [[ -f $xray_qr_config_file ]]; then
+    if [[ -f ${xray_qr_config_file} ]]; then
         if [[ ${old_tls_mode} == ${tls_mode} ]]; then
             echo -e "\n${GreenBG} 检测到旧配置文件, 是否读取旧文件配置 [Y/N]? ${Font}"
             read -r old_config_fq
             case $old_config_fq in
             [nN][oO]|[nN])
-                rm -rf $xray_qr_config_file
+                rm -rf ${xray_qr_config_file}
                 echo -e "${OK} ${GreenBG} 已删除旧配置 ${Font}"
                 ;;
             *)
@@ -1059,7 +1059,7 @@ old_config_exist_check() {
                 bash idleleo
                 ;;
             *)
-                rm -rf $xray_qr_config_file
+                rm -rf ${xray_qr_config_file}
                 echo -e "${OK} ${GreenBG} 已删除旧配置 ${Font}"
                 ;;
             esac
@@ -1139,7 +1139,7 @@ old_config_input () {
             echo -e "${OK} ${GreenBG} 已保留旧配置 ${Font}"
             ;;
         *)
-            rm -rf $xray_qr_config_file
+            rm -rf ${xray_qr_config_file}
             old_config_status="off"
             echo -e "${OK} ${GreenBG} 已删除旧配置 ${Font}"
             ;;
@@ -1427,7 +1427,7 @@ network_secure() {
 }
 
 vless_qr_config_tls_ws() {
-    cat >$xray_qr_config_file <<-EOF
+    cat >${xray_qr_config_file} <<-EOF
 {
     "shell_mode": "${shell_mode}",
     "ws_grpc_mode": "${ws_grpc_mode}",
@@ -1450,7 +1450,7 @@ EOF
 }
 
 vless_qr_config_xtls() {
-    cat >$xray_qr_config_file <<-EOF
+    cat >${xray_qr_config_file} <<-EOF
 {
     "shell_mode": "${shell_mode}",
     "ws_grpc_mode": "${ws_grpc_mode}",
@@ -1474,7 +1474,7 @@ EOF
 }
 
 vless_qr_config_ws_only() {
-    cat >$xray_qr_config_file <<-EOF
+    cat >${xray_qr_config_file} <<-EOF
 {
     "host": "${local_ip}",
     "ws_grpc_mode": "${ws_grpc_mode}",
@@ -1563,7 +1563,7 @@ vless_link_image_choice() {
 }
 
 info_extraction() {
-    grep "$1" $xray_qr_config_file | awk -F '"' '{print $4}'
+    grep "$1" ${xray_qr_config_file} | awk -F '"' '{print $4}'
     [[ 0 -ne $? ]] && read_config_status=0
 }
 
@@ -1592,13 +1592,13 @@ basic_information() {
         XTLS+Nginx+ws+gRPC)
             echo -e "${OK} ${GreenBG} Xray+XTLS+Nginx+ws+gRPC 安装成功 ${Font}"
             ;;
-        ws ONLY)
+        ws?ONLY)
             echo -e "${OK} ${GreenBG} ws ONLY 安装成功 ${Font}"
             ;;
-        gRPC ONLY)
+        gRPC?ONLY)
             echo -e "${OK} ${GreenBG} gRPC ONLY 安装成功 ${Font}"
             ;;
-        ws+gRPC ONLY)
+        ws+gRPC?ONLY)
             echo -e "${OK} ${GreenBG} ws+gRPC ONLY 安装成功 ${Font}"
             ;;
         esac

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.0.0"
+shell_version="1.8.0.1"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -537,7 +537,7 @@ modify_inbound_port() {
 
 modify_nginx_port() {
     sed -i "s/^\( *\).*ssl http2;$/\1listen ${port} ssl http2;/" ${nginx_conf}
-    sed -i "6s/^\( *\).*ssl http2;$/\1listen [::]:${port} ssl http2;/" ${nginx_conf}
+    sed -i "5s/^\( *\).*ssl http2;$/\1listen [::]:${port} ssl http2;/" ${nginx_conf}
     judge "Xray port 修改"
     [[ -f ${xray_qr_config_file} ]] && sed -i "s/^\( *\)\"port\".*/\1\"port\": \"${port}\",/" ${xray_qr_config_file}
     echo -e "${OK} ${GreenBG} 端口号: ${port} ${Font}"

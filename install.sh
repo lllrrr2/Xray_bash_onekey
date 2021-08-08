@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.1.0"
+shell_version="1.8.1.1"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1428,7 +1428,7 @@ network_secure() {
 
 clean_logs() {
     echo -e "\n${GreenBG} 检测到日志文件大小如下 ${Font}"
-    echo -e "${GreenBG}$(du -s /var/log/xray /etc/nginx/logs)${Font}"
+    echo -e "${GreenBG}$(du -sh /var/log/xray /etc/nginx/logs)${Font}"
     timeout "即将清除!"
     for i in $(find /var/log/xray/ /etc/nginx/logs -name "*.log"); do cat /dev/null >$i; done
     judge "日志清理"
@@ -1445,6 +1445,8 @@ clean_logs() {
         judge "设置自动清理日志"
         ;;
     *)
+        timeout "清空屏幕!"
+        clear
         ;;
     esac
 }
@@ -2412,8 +2414,6 @@ menu() {
         ;;
     19)
         clean_logs
-        timeout "清空屏幕!"
-        clear
         bash idleleo
         ;;
     20)

@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.1.1"
+shell_version="1.8.1.2"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1432,17 +1432,26 @@ clean_logs() {
     timeout "即将清除!"
     for i in $(find /var/log/xray/ /etc/nginx/logs -name "*.log"); do cat /dev/null >$i; done
     judge "日志清理"
-    echo -e "${GreenBG} 是否需要设置自动清理日志 [Y/N]? ${Font}"
+    echo -e "\n${GreenBG} 是否需要设置自动清理日志 [Y/N]? ${Font}"
     read -r auto_clean_logs_fq
     case $auto_clean_logs_fq in
     [yY][eE][sS] | [yY])
         echo -e "${GreenBG} 将在每周三04:00自动清空日志 ${Font}"
         if [[ "${ID}" == "centos" ]]; then
-            [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/root) -eq '0' ]] && echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/root
+            if [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/root) -eq '0' ]]; then
+                echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/root
+                judge "设置自动清理日志"
+            else
+                echo -e "${Warning} ${YellowBG} 已设置自动清理日志任务 ${Font}"
+            fi
         else
-            [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/crontabs/root) -eq '0' ]] && echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/crontabs/root
+            if [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/crontabs/root) -eq '0' ]]; then
+                echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/crontabs/root
+                judge "设置自动清理日志"
+            else
+                echo -e "${Warning} ${YellowBG} 已设置自动清理日志任务 ${Font}"
+            fi
         fi
-        judge "设置自动清理日志"
         ;;
     *)
         timeout "清空屏幕!"
@@ -1979,10 +1988,10 @@ timeout() {
             else
                 timeout_index="0"
             fi
-        timeout_black=" "
-        printf "${Warning} ${GreenBG} %d秒后将$1 ${Font} \033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m%s\r" "$timeout_index" "$timeout_str" "$timeout_index" "$timeout_black"
+        printf "${Warning} ${GreenBG} %d秒后将$1 ${Font} \033[${timeout_color};${timeout_bg}m%-s\033[0m \033[${timeout_color}m%d\033[0m \r" "$timeout_index" "$timeout_str" "$timeout_index"
         sleep 0.1
         timeout_str=${timeout_str%?}
+        [[ ${timeout} -eq 0 ]] && printf "\n"
     done
 }
 

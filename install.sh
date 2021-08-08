@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.1.2"
+shell_version="1.8.1.3"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1439,14 +1439,14 @@ clean_logs() {
         echo -e "${GreenBG} 将在每周三04:00自动清空日志 ${Font}"
         if [[ "${ID}" == "centos" ]]; then
             if [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/root) -eq '0' ]]; then
-                echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/root
+                echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done >/dev/null 2>&1" >> /var/spool/cron/root
                 judge "设置自动清理日志"
             else
                 echo -e "${Warning} ${YellowBG} 已设置自动清理日志任务 ${Font}"
             fi
         else
             if [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/crontabs/root) -eq '0' ]]; then
-                echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/crontabs/root
+                echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done >/dev/null 2>&1" >> /var/spool/cron/crontabs/root
                 judge "设置自动清理日志"
             else
                 echo -e "${Warning} ${YellowBG} 已设置自动清理日志任务 ${Font}"

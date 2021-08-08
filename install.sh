@@ -2124,9 +2124,9 @@ update_sh() {
     echo "${shell_version}" >>${version_cmp}
     newest_version=$(sort -rV ${version_cmp} | head -1)
     oldest_version=$(sort -V ${version_cmp} | head -1)
-    version_difference=$(echo "(${shell_version:0:3}-${oldest_version:0:3})>0" | bc)
+    version_difference=$(echo "(${newest_version:0:3}-${oldest_version:0:3})>0" | bc)
     if [[ ${shell_version} != ${newest_version} ]]; then
-        if [[ ${version_difference} -ge 1 ]]; then
+        if [[ ${version_difference} == 1 ]]; then
             echo -e "\n${Warning} ${YellowBG} 存在新版本, 但版本跨度较大, 可能存在不兼容情况, 是否更新 [Y/N]? ${Font}"
         else
             echo -e "\n${GreenBG} 存在新版本, 是否更新 [Y/N]? ${Font}"
@@ -2139,7 +2139,7 @@ update_sh() {
             ln -s ${idleleo_dir}/install.sh ${idleleo_commend_file}
             clear
             echo -e "${OK} ${GreenBG} 更新完成 ${Font}"
-            [[ ${version_difference} -ge 1 ]] && echo -e "${Warning} ${YellowBG} 脚本版本跨度较大, 若服务无法正常运行请卸载后重装! ${Font}"
+            [[ ${version_difference} == 1 ]] && echo -e "${Warning} ${YellowBG} 脚本版本跨度较大, 若服务无法正常运行请卸载后重装! ${Font}"
             bash idleleo
             ;;
         *) ;;
@@ -2220,7 +2220,7 @@ idleleo_commend() {
             clear
             bash idleleo
         elif [[ ${shell_version} != ${oldest_version} ]]; then
-            if [[ ${version_difference} -ge 1 ]]; then
+            if [[ ${version_difference} == 1 ]]; then
                 echo -e "${Warning} ${YellowBG} 脚本版本跨度较大, 可能存在不兼容情况, 是否继续使用 [Y/N]? ${Font}"
                 read -r update_sh_fq
                 case $update_sh_fq in

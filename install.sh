@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.0.1"
+shell_version="1.8.1.0"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -1332,8 +1332,8 @@ service_stop(){
 }
 
 acme_cron_update() {
-    echo -e "\n${GreenBG} acme.sh已自动设置证书自动更新 ${Font}"
-    echo -e "${GreenBG} 是否需要额外设置证书自动更新 (不建议, 下个版本将废弃) [Y/N]? ${Font}"
+    echo -e "\n${GreenBG} acme.sh 已自动设置证书自动更新 ${Font}"
+    echo -e "${GreenBG} 是否需要重新设置证书自动更新 (不推荐) [Y/N]? ${Font}"
     read -r acme_cron_update_fq
     case $acme_cron_update_fq in
     *)
@@ -1424,6 +1424,29 @@ network_secure() {
         echo -e "${GreenBG} Fail2ban 运行状态: ${Font}"
         systemctl status fail2ban
     fi
+}
+
+clean_logs() {
+    echo -e "\n${GreenBG} 检测到日志文件大小如下 ${Font}"
+    echo -e "${GreenBG}$(du -s /var/log/xray /etc/nginx/logs)${Font}"
+    timeout "即将清除!"
+    for i in $(find /var/log/xray/ /etc/nginx/logs -name "*.log"); do cat /dev/null >$i; done
+    judge "日志清理"
+    echo -e "${GreenBG} 是否需要设置自动清理日志 [Y/N]? ${Font}"
+    read -r auto_clean_logs_fq
+    case $auto_clean_logs_fq in
+    [yY][eE][sS] | [yY])
+        echo -e "${GreenBG} 将在每周三04:00自动清空日志 ${Font}"
+        if [[ "${ID}" == "centos" ]]; then
+            [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/root) -eq '0' ]] && echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/root
+        else
+            [[ $(grep -c "find /var/log/xray/ /etc/nginx/logs -name" /var/spool/cron/crontabs/root) -eq '0' ]] && echo "0 4 * * 3 for i in \$(find /var/log/xray/ /etc/nginx/logs -name \"*.log\"); do cat /dev/null >\$i; done" >> /var/spool/cron/crontabs/root
+        fi
+        judge "设置自动清理日志"
+        ;;
+    *)
+        ;;
+    esac
 }
 
 vless_qr_config_tls_ws() {
@@ -2261,12 +2284,13 @@ menu() {
     echo -e "—————————————— 其他选项 ——————————————"
     echo -e "${Green}17.${Font} 安装 TCP 加速脚本"
     echo -e "${Green}18.${Font} 设置 Fail2ban 防暴力破解"
-    echo -e "${Green}19.${Font} 安装 MTproxy (不推荐)"
-    echo -e "${Green}20.${Font} 设置 额外证书自动更新任务 (不推荐)"
-    echo -e "${Green}21.${Font} 证书 有效期手动更新"
-    echo -e "${Green}22.${Font} 卸载 Xray"
-    echo -e "${Green}23.${Font} 清空 证书文件"
-    echo -e "${Green}24.${Font} 退出 \n"
+    echo -e "${Green}19.${Font} 清除 日志文件"
+    echo -e "${Green}20.${Font} 安装 MTproxy (不推荐)"
+    echo -e "${Green}21.${Font} 设置 额外证书自动更新 (不推荐)"
+    echo -e "${Green}22.${Font} 证书 有效期手动更新"
+    echo -e "${Green}23.${Font} 卸载 Xray"
+    echo -e "${Green}24.${Font} 清空 证书文件"
+    echo -e "${Green}25.${Font} 退出 \n"
 
     read -rp "请输入数字: " menu_num
     case $menu_num in
@@ -2387,16 +2411,22 @@ menu() {
         bash idleleo
         ;;
     19)
+        clean_logs
+        timeout "清空屏幕!"
+        clear
+        bash idleleo
+        ;;
+    20)
         clear
         mtproxy_sh
         ;;
-    20)
+    21)
         acme_cron_update
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    21)
+    22)
         service_stop
         ssl_update_manuel
         service_restart
@@ -2404,20 +2434,20 @@ menu() {
         clear
         bash idleleo
         ;;
-    22)
+    23)
         uninstall_all
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    23)
+    24)
         delete_tls_key_and_crt
         rm -rf ${ssl_chainpath}/*
         timeout "清空屏幕!"
         clear
         bash idleleo
         ;;
-    24)
+    25)
         timeout "清空屏幕!"
         clear
         exit 0

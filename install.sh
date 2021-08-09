@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.1.5"
+shell_version="1.8.1.6"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -460,7 +460,7 @@ nginx_upstream_server_set() {
                     nginx_conf_servers_add
                     wait
                     [[ -f ${nginx_systemd_file} ]] && systemctl restart nginx
-                    [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx restart
+                    [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx restart
                 else
                     echo -e "${Error} ${RedBG} 未检测到配置文件！ ${Font}"
                 fi
@@ -495,7 +495,7 @@ nginx_upstream_server_set() {
                 fi
                 wait
                 [[ -f ${nginx_systemd_file} ]] && systemctl restart nginx && judge "追加 Nginx 负载均衡"
-                [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx restart && judge "追加 Nginx 负载均衡"
+                [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx restart && judge "追加 Nginx 负载均衡"
             fi
             ;;
         *) ;;
@@ -1279,7 +1279,7 @@ EOF
 enable_process_systemd() {
     if [[ ${tls_mode} != "None" ]]; then
         [[ -f ${nginx_systemd_file} ]] && systemctl enable nginx && judge "设置 Nginx 开机自启"
-        [[ bt_nginx == "Yes" ]] && echo -e "${Warning} ${GreenBG} 存在宝塔面板, 请自行设置 ${Font}"
+        [[ ${bt_nginx} == "Yes" ]] && echo -e "${Warning} ${GreenBG} 存在宝塔面板, 请自行设置 ${Font}"
     fi
     systemctl enable xray
     judge "设置 Xray 开机自启"
@@ -1288,7 +1288,7 @@ enable_process_systemd() {
 disable_process_systemd() {
     if [[ ${tls_mode} != "None" ]]; then
         [[ -f ${nginx_systemd_file} ]] && systemctl stop nginx && systemctl disable nginx && judge "关闭 Nginx 开机自启"
-        [[ bt_nginx == "Yes" ]] && echo -e "${Warning} ${GreenBG} 存在宝塔面板, 请自行设置 ${Font}"
+        [[ ${bt_nginx} == "Yes" ]] && echo -e "${Warning} ${GreenBG} 存在宝塔面板, 请自行设置 ${Font}"
     fi
     systemctl disable xray
     judge "关闭 Xray 开机自启"
@@ -1296,7 +1296,7 @@ disable_process_systemd() {
 
 stop_service_all() {
     [[ -f ${nginx_systemd_file} ]] && systemctl stop nginx && systemctl disable nginx
-    [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx stop
+    [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx stop
     systemctl stop xray
     systemctl disable xray
     echo -e "${OK} ${GreenBG} 停止已有服务 ${Font}"
@@ -1307,7 +1307,7 @@ service_restart(){
     wait
     if [[ ${tls_mode} != "None" ]]; then
         [[ -f ${nginx_systemd_file} ]] && systemctl restart nginx && judge "Nginx 重启"
-        [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx restart && judge "Nginx 重启"
+        [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx restart && judge "Nginx 重启"
     fi
     systemctl restart xray
     judge "Xray 重启"
@@ -1316,7 +1316,7 @@ service_restart(){
 service_start(){
     if [[ ${tls_mode} != "None" ]]; then
         [[ -f ${nginx_systemd_file} ]] && systemctl start nginx && judge "Nginx 启动"
-        [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx start && judge "Nginx 启动"
+        [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx start && judge "Nginx 启动"
     fi
     systemctl start xray
     judge "Xray 启动"
@@ -1325,7 +1325,7 @@ service_start(){
 service_stop(){
     if [[ ${tls_mode} != "None" ]]; then
         [[ -f ${nginx_systemd_file} ]] && systemctl stop nginx && judge "Nginx 停止"
-        [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx stop && judge "Nginx 停止"
+        [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx stop && judge "Nginx 停止"
     fi
     systemctl stop xray
     judge "Xray 停止"
@@ -1831,7 +1831,7 @@ tls_type() {
         wait
         if [[ ${tls_mode} == "TLS" ]]; then
             [[ -f ${nginx_systemd_file} ]] && systemctl restart nginx && judge "Nginx 重启"
-            [[ bt_nginx == "Yes" ]] && /etc/init.d/nginx restart && judge "Nginx 重启"
+            [[ ${bt_nginx} == "Yes" ]] && /etc/init.d/nginx restart && judge "Nginx 重启"
         elif [[ ${tls_mode} == "XTLS" ]]; then
             systemctl restart xray
             judge "Xray 重启"

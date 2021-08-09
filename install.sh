@@ -32,7 +32,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 Warning="${Red}[警告]${Font}"
 
-shell_version="1.8.1.4"
+shell_version="1.8.1.5"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -676,9 +676,6 @@ nginx_exist_check() {
         fi
         echo -e "${OK} ${GreenBG} Nginx 已存在, 跳过编译安装过程 ${Font}"
         wait
-    elif [[ -d "/usr/local/nginx/" ]]; then
-        echo -e "${Error} ${RedBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装! ${Font}"
-        exit 1
     elif [[ -d "/www/server/panel/BTPanel" ]]; then
         echo -e "${GreenBG} 检测到存在宝塔面板 ${Font}"
         if [[ -f "/www/server/nginx/sbin/nginx" ]] && [[ -d "/www/server/panel/vhost/nginx" ]]; then
@@ -697,6 +694,9 @@ nginx_exist_check() {
                 ;;
             esac
         fi
+    elif [[ ! -d "/www/server/panel/BTPanel" ]] && [[ -d "/usr/local/nginx/" ]]; then
+        echo -e "${Error} ${RedBG} 检测到其他套件安装的 Nginx, 继续安装会造成冲突, 请处理后安装! ${Font}"
+        exit 1
     else
         nginx_install
     fi

@@ -34,7 +34,7 @@ OK="${Green}[OK]${Font}"
 Error="${RedW}[错误]${Font}"
 Warning="${RedW}[警告]${Font}"
 
-shell_version="1.9.5.7"
+shell_version="1.9.5.8"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -780,8 +780,8 @@ xray_install() {
 xray_update() {
     [[ ! -d /usr/local/etc/xray ]] && echo -e "${GreenBG} 若更新无效, 建议直接卸载再安装! ${Font}"
     echo -e "${Warning} ${GreenBG} 部分新功能需要重新安装才可生效 ${Font}"
-    xray_online_version=$(check_version xray_online_version)
-    ## xray_online_version=$(check_version xray_online_pre_version)
+    ## xray_online_version=$(check_version xray_online_version)
+    xray_online_version=$(check_version xray_online_pre_version)
     if [[ $(info_extraction xray_version) != ${xray_online_version} ]] && [[ ${xray_version} != ${xray_online_version} ]]; then
         if [[ ${auto_update} != "YES" ]]; then
             echo -e "${Warning} ${GreenBG} 检测到存在最新版 ${Font}"
@@ -2050,7 +2050,7 @@ basic_information() {
                 echo -e "${Red} serviceName (不需要加/):${Font} $(info_extraction servicename) "
             fi
         else
-            echo -e "${Red} 流控 (flow):${Font} xtls-rprx-vision,none "
+            echo -e "${Red} 流控 (flow):${Font} xtls-rprx-vision "
             if [[ "$xtls_add_more" == "on" ]]; then
                 if [[ ${ws_grpc_mode} == "onlyws" ]]; then
                     echo -e "${Red} ws 端口 (port):${Font} $(info_extraction ws_port) "
@@ -2344,7 +2344,7 @@ add_user() {
             xtls_user_more=""
         elif [[ ${tls_mode} == "XTLS" ]]; then
             choose_user_prot=0
-            xtls_user_more="\"flow\":\"xtls-rprx-vision,none\","
+            xtls_user_more="\"flow\":\"xtls-rprx-vision\","
         fi
         wait
         email_set
@@ -2977,13 +2977,13 @@ idleleo_commend() {
                     nginx_need_update="${Green}[最新版]${Font}"
                 fi
                 if [[ -f ${xray_qr_config_file} ]] && [[ -f ${xray_conf} ]] && [[ -f /usr/local/bin/xray ]]; then
-                    xray_online_version=$(check_version xray_online_version)
-                    ## xray_online_version=$(check_version xray_online_pre_version)
+                    ## xray_online_version=$(check_version xray_online_version)
+                    xray_online_version=$(check_version xray_online_pre_version)
                     if [[ $(info_extraction xray_version) == null ]]; then
                         xray_need_update="${Green}[已安装] (版本未知)${Font}"
                     elif [[ ${xray_version} != $(info_extraction xray_version) ]] && [[ $(info_extraction xray_version) != ${xray_online_version} ]]; then
-                        ## xray_need_update="${Red}[有新版!]${Font}" 紧急更新
-                        xray_need_update="${Red}[请务必更新!]${Font}"
+                        xray_need_update="${Red}[有新版!]${Font}"
+                        ### xray_need_update="${Red}[请务必更新!]${Font}"
                     elif [[ ${xray_version} == $(info_extraction xray_version) ]] || [[ $(info_extraction xray_version) == ${xray_online_version} ]]; then
                         if [[ $(info_extraction xray_version) != ${xray_online_version} ]]; then
                             xray_need_update="${Green}[有测试版]${Font}"

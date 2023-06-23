@@ -2982,8 +2982,8 @@ idleleo_commend() {
                     if [[ $(info_extraction xray_version) == null ]]; then
                         xray_need_update="${Green}[已安装] (版本未知)${Font}"
                     elif [[ ${xray_version} != $(info_extraction xray_version) ]] && [[ $(info_extraction xray_version) != ${xray_online_version} ]]; then
-                        ## xray_need_update="${Red}[有新版!]${Font}" 紧急更新
-                        xray_need_update="${Red}[请务必更新!]${Font}"
+                        xray_need_update="${Red}[有新版!]${Font}"
+                        ### xray_need_update="${Red}[请务必更新!]${Font}"
                     elif [[ ${xray_version} == $(info_extraction xray_version) ]] || [[ $(info_extraction xray_version) == ${xray_online_version} ]]; then
                         if [[ $(info_extraction xray_version) != ${xray_online_version} ]]; then
                             xray_need_update="${Green}[有测试版]${Font}"

@@ -34,7 +34,7 @@ OK="${Green}[OK]${Font}"
 Error="${RedW}[错误]${Font}"
 Warning="${RedW}[警告]${Font}"
 
-shell_version="1.9.5.8"
+shell_version="1.9.5.9
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"
@@ -780,28 +780,29 @@ xray_install() {
 xray_update() {
     [[ ! -d /usr/local/etc/xray ]] && echo -e "${GreenBG} 若更新无效, 建议直接卸载再安装! ${Font}"
     echo -e "${Warning} ${GreenBG} 部分新功能需要重新安装才可生效 ${Font}"
-    ## xray_online_version=$(check_version xray_online_version)
-    xray_online_version=$(check_version xray_online_pre_version)
-    if [[ $(info_extraction xray_version) != ${xray_online_version} ]] && [[ ${xray_version} != ${xray_online_version} ]]; then
+    xray_online_version=$(check_version xray_online_version)
+    ## xray_online_version=$(check_version xray_online_pre_version)
+    ## if [[ $(info_extraction xray_version) != ${xray_online_version} ]] && [[ ${xray_version} != ${xray_online_version} ]]; then
+    if [[ $(info_extraction xray_version) != ${xray_online_version} ]]; then
         if [[ ${auto_update} != "YES" ]]; then
             echo -e "${Warning} ${GreenBG} 检测到存在最新版 ${Font}"
             echo -e "${Warning} ${GreenBG} 脚本可能未兼容此版本 ${Font}"
-            echo -e "\n${Warning} ${GreenBG} 是否更新到测试版 [Y/${Red}N${Font}${GreenBG}]? ${Font}"
+            echo -e "\n${Warning} ${GreenBG} 是否更新 [Y/${Red}N${Font}${GreenBG}]? ${Font}"
             read -r xray_test_fq
         else
             xray_test_fq=1
         fi
         case $xray_test_fq in
         [yY][eE][sS] | [yY])
-            echo -e "${OK} ${GreenBG} 即将升级 Xray 测试版! ${Font}"
+            echo -e "${OK} ${GreenBG} 即将升级 Xray ! ${Font}"
             systemctl stop xray
             wait
-            xray_version=${xray_online_version}
+            ## xray_version=${xray_online_version}
             bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -f --version v${xray_version}
             judge "Xray 升级"
             ;;
         *)
-            echo -e "${OK} ${GreenBG} 即将升级/重装 Xray 稳定版! ${Font}"
+            echo -e "${OK} ${GreenBG} 即将升级/重装 Xray ! ${Font}"
             systemctl stop xray
             wait
             bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -f --version v${xray_version}
@@ -809,7 +810,7 @@ xray_update() {
             ;;
         esac
     else
-        timeout "升级/重装 Xray 稳定版!"
+        timeout "升级/重装 Xray !"
         systemctl stop xray
         wait
         bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -f --version v${xray_version}
@@ -2775,7 +2776,7 @@ check_file_integrity() {
 
 read_version() {
     shell_online_version="$(check_version shell_online_version)"
-    xray_version="$(check_version xray_tested_version)"
+    xray_version="$(check_version xray_online_version)"
     nginx_version="$(check_version nginx_online_version)"
     openssl_version="$(check_version openssl_tested_version)"
     jemalloc_version="$(check_version jemalloc_tested_version)"
@@ -2977,8 +2978,8 @@ idleleo_commend() {
                     nginx_need_update="${Green}[最新版]${Font}"
                 fi
                 if [[ -f ${xray_qr_config_file} ]] && [[ -f ${xray_conf} ]] && [[ -f /usr/local/bin/xray ]]; then
-                    ## xray_online_version=$(check_version xray_online_version)
-                    xray_online_version=$(check_version xray_online_pre_version)
+                    xray_online_version=$(check_version xray_online_version)
+                    ##xray_online_version=$(check_version xray_online_pre_version)
                     if [[ $(info_extraction xray_version) == null ]]; then
                         xray_need_update="${Green}[已安装] (版本未知)${Font}"
                     elif [[ ${xray_version} != $(info_extraction xray_version) ]] && [[ $(info_extraction xray_version) != ${xray_online_version} ]]; then

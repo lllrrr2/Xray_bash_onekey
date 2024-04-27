@@ -34,7 +34,7 @@ OK="${Green}[OK]${Font}"
 Error="${RedW}[错误]${Font}"
 Warning="${RedW}[警告]${Font}"
 
-shell_version="1.9.5.9
+shell_version="1.9.5.9"
 shell_mode="未安装"
 tls_mode="None"
 ws_grpc_mode="None"

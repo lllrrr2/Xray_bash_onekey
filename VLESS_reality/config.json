@@ -25,10 +25,10 @@
                 "network": "tcp",
                 "security": "reality",
                 "realitySettings": {
-                    "dest": "example.com", 
-                    "serverNames": "example.com",
+                    "target": "example.com:443", 
+                    "serverNames": ["example.com"],
                     "privateKey": "privateKey",
-                    "shortIds": "shortIds"
+                    "shortIds": ["shortIds"]
                 }
             }
         },

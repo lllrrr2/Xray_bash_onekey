@@ -40,6 +40,7 @@ fm_create_servername_file() {
     fi
     echo "${url}: reality;" > "${url}.serverName"
     echo -e "${OK} ${GreenBG} 文件 ${url}.serverName 已创建 ${Font}"
+    fm_restart_nginx_and_check_status
 }
 
 # 函数: 创建一个新的 wsServer 或 grpcServer 文件
@@ -89,6 +90,7 @@ fm_create_ws_or_grpc_server_file() {
         echo -e "${OK} ${GreenBG} 跳过防火墙设置 ${Font}"
         ;;
     esac
+    fm_restart_nginx_and_check_status
 }
 
 # 函数: 编辑一个已存在的指定扩展名的文件
@@ -104,6 +106,7 @@ fm_edit_file() {
         fi
         vim "${filename}.${fm_EXTENSION}"
         echo -e "${OK} ${GreenBG} 文件 ${filename}.${fm_EXTENSION} 已编辑 ${Font}"
+        fm_restart_nginx_and_check_status
     else
         echo -e "${Error} ${RedBG} 文件 ${filename}.${fm_EXTENSION} 未找到 ${Font}"
     fi
@@ -117,6 +120,7 @@ fm_delete_file() {
     if [ -f "${filename}.${fm_EXTENSION}" ]; then
         rm "${filename}.${fm_EXTENSION}"
         echo -e "${OK} ${GreenBG} 文件 ${filename}.${fm_EXTENSION} 已删除 ${Font}"
+        fm_restart_nginx_and_check_status
     else
         echo -e "${Error} ${RedBG} 文件 ${filename}.${fm_EXTENSION} 未找到 ${Font}"
     fi
@@ -155,13 +159,12 @@ fm_main_menu() {
             2) fm_create_file ;;
             3) fm_edit_file ;;
             4) fm_delete_file ;;
-            5) exit 0 ;;
+            5) source "$idleleo" ;;
             *) echo -e "${Error} ${RedBG} 无效选项 请重试 ${Font}" ;;
         esac
     done
 }
 
-# 函数: 检查更新
 check_for_updates() {
     local latest_version=""
     local update_choice=""
@@ -197,6 +200,17 @@ check_for_updates() {
     fi
 }
 
+fm_restart_nginx_and_check_status() {
+    if [[ -f ${nginx_systemd_file} ]]; then
+        systemctl restart nginx
+        if systemctl is-active --quiet nginx; then
+            echo -e "${OK} ${GreenBG} Nginx 重启成功 ${Font}"
+        else
+            echo -e "${Error} ${RedBG} Nginx 重启失败 请检查配置文件是否有误 ${Font}"
+            fm_edit_file
+        fi
+    fi
+}
 
 # 检查更新
 check_for_updates

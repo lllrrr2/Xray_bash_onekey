@@ -33,7 +33,7 @@ fm_list_files() {
 # 函数: 创建一个新的 serverName 文件
 fm_create_servername_file() {
     local url
-    read -p "请输入网址 (例如 hey.run ), 不要包含 http:// 或 https:// 开头: " url
+    read -p "请输入网址 (例如 hey.run) , 不要包含 http:// 或 https:// 开头: " url
     if [[ $url =~ ^(http|https):// ]]; then
         echo -e "${Error} ${RedBG} 网址不能包含 http:// 或 https:// 开头 ${Font}"
         return
@@ -97,7 +97,7 @@ fm_create_ws_or_grpc_server_file() {
 fm_edit_file() {
     fm_list_files
     local filename
-    read -p "请输入要编辑的 .$fm_EXTENSION 文件名 (不包括扩展名 ): " filename
+    read -p "请输入要编辑的 .$fm_EXTENSION 文件名 (不包括扩展名): " filename
     if [ -f "${filename}.${fm_EXTENSION}" ]; then
         # 检查 vim 是否安装
         if ! command -v vim &> /dev/null; then
@@ -116,7 +116,7 @@ fm_edit_file() {
 fm_delete_file() {
     fm_list_files
     local filename
-    read -p "请输入要删除的 .$fm_EXTENSION 文件名 (不包括扩展名 ): " filename
+    read -p "请输入要删除的 .$fm_EXTENSION 文件名 (不包括扩展名): " filename
     if [ -f "${filename}.${fm_EXTENSION}" ]; then
         rm "${filename}.${fm_EXTENSION}"
         echo -e "${OK} ${GreenBG} 文件 ${filename}.${fm_EXTENSION} 已删除 ${Font}"

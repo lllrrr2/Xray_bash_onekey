@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 定义当前版本号
-SCRIPT_VERSION="1.0.0"
+fm_SCRIPT_VERSION="1.0.0"
 
 # 检查是否提供了扩展名参数
 if [ -z "$1" ]; then
@@ -170,10 +170,10 @@ check_for_updates() {
     local update_choice=""
 
     # 直接使用 curl 下载远程版本信息
-    latest_version=$(curl -s "$fm_remote_version_url")
+    latest_version=$(curl -s "$fm_remote_url" | grep 'fm_SCRIPT_VERSION=' | sed 's/fm_SCRIPT_VERSION="//; s/"//')
 
-    if [ -n "$latest_version" ] && [ "$latest_version" != "$SCRIPT_VERSION" ]; then
-        echo -e "${Warning} ${YellowBG} 新版本可用: $latest_version 当前版本: $SCRIPT_VERSION ${Font}"
+    if [ -n "$latest_version" ] && [ "$latest_version" != "$fm_SCRIPT_VERSION" ]; then
+        echo -e "${Warning} ${YellowBG} 新版本可用: $latest_version 当前版本: $fm_SCRIPT_VERSION ${Font}"
         echo -e "${Warning} ${YellowBG} 请访问 https://github.com/hello-yunshu/Xray_bash_onekey 查看更新说明 ${Font}"
 
         echo -e "${GreenBG} 是否要下载并安装新版本 [Y/${Red}N${Font}${GreenBG}]? ${Font}"
@@ -181,7 +181,7 @@ check_for_updates() {
         case $update_choice in
             [yY][eE][sS] | [yY])
                 echo -e "${Info} ${Green} 正在下载新版本... ${Font}"
-                curl -sL "$fm_remote_version_url" -o "${idleleo_dir}/file_manager.sh"
+                curl -sL "$fm_remote_url" -o "${idleleo_dir}/file_manager.sh"
 
                 if [ $? -eq 0 ]; then
                     chmod +x "${idleleo_dir}/file_manager.sh"
@@ -196,7 +196,7 @@ check_for_updates() {
                 ;;
         esac
     else
-        echo -e "${OK} ${Green} 当前已经是最新版本: $SCRIPT_VERSION ${Font}"
+        echo -e "${OK} ${Green} 当前已经是最新版本: $fm_SCRIPT_VERSION ${Font}"
     fi
 }
 
